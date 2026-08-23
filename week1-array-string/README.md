@@ -164,8 +164,8 @@ def factorial_recursive(n):
 ```
 week1-array-string/
 ├── README.md
-├── problem1-배열 두 배 만들기/
+├── problem01-배열 두 배 만들기/
 │   └── 이름.py
-├── problem2-문자열 반복해서 출력하기/
+├── problem02-문자열 반복해서 출력하기/
 │   └── 이름.py
 ```
