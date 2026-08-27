@@ -200,7 +200,6 @@ def factorial_recursive(n):
 | Lv.1 | 숫자 문자열과 영단어 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/81301) |
 | Lv.1 | 문자열 나누기 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/140108) |
 | Lv.2 | 문자열 압축 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/60057) |
-| Lv.2 | 괄호 변환 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/60058) |
 
 ## 💡 풀이 올릴 때
 
