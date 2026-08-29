@@ -84,13 +84,17 @@
   table.board td.sum { font-weight:600; }
   table.board tfoot td, table.board tfoot th { color:var(--muted); font-size:12px; background:var(--bg); }
   /* 메달 순위표: 순위 열이 맨 앞이라 이름 열을 고정하지 않음 */
-  table.board.medals { min-width:460px; }
+  table.board.medals { min-width:600px; }
   table.board.medals th.name, table.board.medals thead th.name { position:static; }
   table.board.medals td.rank { color:var(--muted); font-weight:600; width:48px; }
   table.board.medals td.zero { color:var(--muted); font-weight:400; }
   table.board.medals td.pts { font-weight:700; }
   .medals-h { margin:22px 0 8px; font-size:15px; }
   .hdr { background:none; border:none; font:inherit; font-weight:600; color:var(--accent); cursor:pointer; padding:0; }
+  .hdr:hover { text-decoration:underline; }
+  /* [data-tip] 요소에 마우스를 올리면 뜨는 팝업 — 표의 overflow 에 안 잘리게 body 에 fixed 로 띄움. --ax = 화살표 x 위치 */
+  .tip { --ax:50%; position:fixed; z-index:40; background:var(--text); color:var(--bg); padding:5px 10px; border-radius:6px; font-size:12.5px; font-weight:600; white-space:nowrap; pointer-events:none; box-shadow:0 4px 14px rgba(0,0,0,.25); }
+  .tip::before { content:''; position:absolute; top:-5px; left:var(--ax); margin-left:-5px; border:5px solid transparent; border-top:0; border-bottom-color:var(--text); }
   .badge { display:inline-block; min-width:36px; padding:1px 6px; border-radius:10px; font-size:11.5px; font-weight:600; border:1px solid var(--c,#999); color:var(--c,#999); background:transparent; cursor:pointer; font-family:inherit; }
   .badge:hover { background:var(--c,#999); color:#fff; }
   .badge.branch { border-style:dotted; background:var(--local-bg); }
@@ -113,8 +117,6 @@
   .plegend { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:8px; align-items:center; }
   .pk { display:inline-block; width:12px; height:12px; border-radius:3px; border:2px solid var(--line); vertical-align:-2px; margin-right:3px; background:var(--card); }
   .pk.done { background:var(--ok-bg); border-color:var(--ok); } .pk.pushed { background:var(--accent-bg); border-color:var(--accent); } .pk.local { background:var(--warn-bg); border-color:var(--warn); }
-  .legend { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:10px; font-size:12.5px; }
-  .legend button { color:var(--text); } .legend button:hover { color:var(--accent); }
   .summary { margin-bottom:10px; font-size:13px; }
   .overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50; display:flex; justify-content:flex-end; }
   .panel { background:var(--bg); width:min(900px,100%); height:100%; overflow:auto; box-shadow:-4px 0 20px rgba(0,0,0,.25); }
@@ -126,12 +128,20 @@
   .dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
   .fcard .code { padding:0 12px 10px; }
   .fb { border-top:1px solid var(--line); padding:10px 12px; }
-  .fb-head { font-weight:600; margin-bottom:6px; } .fb-head .count { background:var(--accent-bg); color:var(--accent); border-radius:10px; padding:0 7px; font-size:12px; }
+  .fb-head { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-weight:600; margin-bottom:6px; } .fb-head .count { background:var(--accent-bg); color:var(--accent); border-radius:10px; padding:0 7px; font-size:12px; }
   .fb-item { border-left:3px solid var(--line); padding:4px 10px; margin:6px 0; }
   .fb-item .fb-body { white-space:pre-wrap; word-break:break-word; margin-top:2px; }
   .tag { font-size:11px; border-radius:4px; padding:0 5px; background:var(--accent-bg); color:var(--accent); }
   .tag.pr { background:var(--ok-bg); color:var(--ok); } .tag.local { background:var(--warn-bg); color:var(--warn); } .tag.branch { background:var(--bg); color:var(--muted); border:1px dotted var(--line); }
   .fb-form textarea { width:100%; min-height:64px; margin:6px 0; }
+  /* 따봉: 풀이 카드 피드백 머리글 오른쪽. .on = 내가 누른 상태, .own = 내 코드(못 누름, 개수만) */
+  .like-btn.on { background:var(--accent-bg); border-color:var(--accent); color:var(--accent); font-weight:700; }
+  .like.own { color:var(--muted); font-size:12px; cursor:help; }
+  .like-who { font-weight:400; }
+  /* 내 피드백의 수정/삭제 버튼과 수정 폼 */
+  .fb-meta { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .fb-act { margin-left:auto; display:flex; gap:8px; } .fb-act button { font-size:12px; color:var(--muted); } .fb-act button:hover { color:var(--accent); }
+  .fb-item.editing textarea { width:100%; min-height:64px; margin:4px 0; }
   #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#1f2328; color:#fff; padding:8px 16px; border-radius:6px; z-index:99; box-shadow:0 4px 14px rgba(0,0,0,.3); }
   .kbd { font-size:11px; border:1px solid var(--line); border-radius:3px; padding:0 4px; }
   .next p { margin:6px 0; }
@@ -307,8 +317,8 @@ const CFG_KEY = 'psboard.cfg', CACHE_KEY = 'psboard.cache3', SORT_KEY = 'psboard
 // 현황표 정렬 기준 (dir = 처음 눌렀을 때 방향)
 const SORTS = { count:{ label:'푼 수', dir:'desc', title:'이번 주에 올린 문제 수 (머지 전 포함)' }, merged:{ label:'머지됨', dir:'desc', title:'이번 주 main에 머지된 문제 수' }, total:{ label:'전체 주차', dir:'desc', title:'모든 주차 합계' }, name:{ label:'이름', dir:'asc', title:'이름 가나다/알파벳순' } };
 // 메달 순위표 정렬 기준 (모든 주차의 🥇🥈🥉 합산) · 승점 = 금 3 · 은 2 · 동 1
-const MEDAL_SORTS = { points:{ label:'승점', dir:'desc', title:'승점 = 금 3점 · 은 2점 · 동 1점' }, gold:{ label:'🥇 금', dir:'desc', title:'금메달 수 (주차 1위)' }, silver:{ label:'🥈 은', dir:'desc', title:'은메달 수 (주차 2위)' }, bronze:{ label:'🥉 동', dir:'desc', title:'동메달 수 (주차 3위)' }, name:{ label:'이름', dir:'asc', title:'이름 가나다/알파벳순' } };
-const MEDAL_POINTS = { gold:3, silver:2, bronze:1 };
+const MEDAL_SORTS = { points:{ label:'승점', dir:'desc', title:'승점 = 🥇3 + 🥈2 + 🥉1 + 푼 문제×2 + 👍×1' }, gold:{ label:'🥇 금', dir:'desc', title:'금메달 수 (주차 1위) · 1개 3점' }, silver:{ label:'🥈 은', dir:'desc', title:'은메달 수 (주차 2위) · 1개 2점' }, bronze:{ label:'🥉 동', dir:'desc', title:'동메달 수 (주차 3위) · 1개 1점' }, solved:{ label:'푼 문제', dir:'desc', title:'모든 주차에서 푼 문제 수 (머지 전 포함 · personal 제외) · 1문제 2점' }, likes:{ label:'👍', dir:'desc', title:'내 풀이가 받은 따봉 수 (본인 것 제외) · 1개 1점' }, name:{ label:'이름', dir:'asc', title:'이름 가나다/알파벳순' } };
+const MEDAL_POINTS = { gold:3, silver:2, bronze:1, solved:2, likes:1 };
 const EXT_COLOR = { py:'#3572A5', cpp:'#f34b7d', c:'#555555', java:'#b07219', js:'#e3c14a', ts:'#3178c6', kt:'#A97BFF', go:'#00ADD8', rs:'#dea584', cs:'#178600', swift:'#F05138' };
 const COMMENT_PREFIX = { py:'#', rb:'#', sh:'#' };
 
@@ -343,7 +353,8 @@ function saveCfg() { localStorage.setItem(CFG_KEY, JSON.stringify({ name: cfg.na
 // ---------- 상태 ----------
 const state = { tab:'board', week:0, cWeek:0, cProb:0, rate:'', sort: (() => { const s = safeJson(localStorage.getItem(SORT_KEY)); return s && SORTS[s.key] ? { key: s.key, dir: s.dir === 'asc' ? 'asc' : 'desc' } : { key:'count', dir:'desc' }; })(), msort: (() => { const s = safeJson(localStorage.getItem(MSORT_KEY)); return s && MEDAL_SORTS[s.key] ? { key: s.key, dir: s.dir === 'asc' ? 'asc' : 'desc' } : { key:'points', dir:'desc' }; })() };
 let data = null, lastPayload = null;
-const local = { handle:null, perm:'none', files:new Map(), branch:'', feedback:[] };
+// feedback: 내 feedback/<이름>.json 내용, fbLoaded: 그 파일을 실제로 읽었는지 (읽었으면 내 피드백·따봉은 로컬 파일이 기준)
+const local = { handle:null, perm:'none', files:new Map(), branch:'', feedback:[], fbLoaded:false };
 const codeCache = new Map();
 const readmeCache = new Map();
 
@@ -426,14 +437,39 @@ function parseTree(items) {
   for (const w of weekArr) { w.problems = [...w.problems.values()].sort((a, b) => a.num - b.num); for (const p of w.problems) p.files.sort((a, b) => a.person.localeCompare(b.person)); }
   return { weeks: weekArr, personal, fbFiles };
 }
+// 피드백 파일 항목 하나의 식별 키 (경로·시각·내용). 로컬 항목이 GitHub 에 올라갔는지 판정에 쓴다
+const fbKey = e => `${nfc(e.path)}|${e.date || ''}|${e.like ? '👍' : String(e.text ?? '')}`;
+const fbValid = e => !!(e && e.path && (e.text || e.like));
+// GitHub 에 올라간 내 항목 (모든 브랜치 합집합, 키로 중복 제거) → Map(키 → { entry, branch })
+function myPushedFeedback(fbFiles) {
+  const m = new Map();
+  for (const f of fbFiles || []) if (f.author === cfg.name) for (const e of f.entries || []) { if (fbValid(e) && !m.has(fbKey(e))) m.set(fbKey(e), { entry: e, branch: f.branch }); }
+  return m;
+}
+// 피드백(글)과 따봉을 경로별로 모은다 → { feedback, likes }
+// 항목 형식: { path, date, text } = 피드백 글, { path, date, like:true } = 따봉
+// 내 로컬 feedback/<이름>.json 을 읽었으면 내 항목은 로컬 파일이 기준이고 GitHub 에 있는 내 항목은 무시한다 —
+// 그래야 수정·삭제·따봉 취소가 바로 보이고, 푸시하면 남들에게도 똑같이 반영된다. (로컬 항목 중 GitHub 에 같은 내용이 있으면 'board', 없으면 'local' = 푸시 전)
 function buildFeedback(fbFiles, prComments, localEntries) {
-  const fb = {}, seen = new Set();
-  const add = (p, item) => { const k = `${item.author}|${p}|${item.date}|${item.source === 'pr' ? item.url : ''}`; if (seen.has(k)) return; seen.add(k); (fb[p] ||= []).push(item); };
-  for (const f of fbFiles || []) for (const e of f.entries || []) { if (!e || !e.path || !e.text) continue; add(nfc(e.path), { source:'board', author:f.author, body:String(e.text), date:e.date || '', branch:f.branch }); }
-  for (const c of prComments || []) { if (!c.path) continue; add(nfc(c.path), { source:'pr', author:c.author, body:c.body, date:c.date, url:c.url, line:c.line }); }
-  for (const e of localEntries || []) { if (!e || !e.path || !e.text) continue; add(nfc(e.path), { source:'local', author:cfg.name, body:String(e.text), date:e.date || '' }); }
+  const fb = {}, likes = {}, seen = new Set();
+  const mine = !!(cfg.name && local.fbLoaded);
+  const pushed = mine ? myPushedFeedback(fbFiles) : new Map();
+  const add = (author, e, source, branch, extra = {}) => {
+    const p = nfc(e.path);
+    if (e.like) {   // 따봉: 본인 파일이면 무시, 한 사람당 파일 하나에 하나
+      const owner = data?.fileByPath.get(p)?.person; if (owner && owner === author) return;
+      const k = `👍|${author}|${p}`; if (seen.has(k)) return; seen.add(k);
+      (likes[p] ||= []).push({ author, date: e.date || '', source, branch }); return;
+    }
+    const k = `${author}|${p}|${e.date || ''}|${extra.url || ''}`; if (seen.has(k)) return; seen.add(k);
+    (fb[p] ||= []).push({ source, author, body: String(e.text), date: e.date || '', branch, edited: e.edited || '', ...extra });
+  };
+  for (const f of fbFiles || []) { if (mine && f.author === cfg.name) continue; for (const e of f.entries || []) if (fbValid(e)) add(f.author, e, 'board', f.branch); }
+  for (const c of prComments || []) if (c.path) add(c.author, { path: c.path, text: c.body || '', date: c.date }, 'pr', '', { url: c.url, line: c.line });
+  if (mine) for (const e of localEntries || []) { if (!fbValid(e)) continue; const g = pushed.get(fbKey(e)); add(cfg.name, e, g ? 'board' : 'local', g ? g.branch : ''); }
   for (const k in fb) fb[k].sort((a, b) => String(a.date).localeCompare(String(b.date)));
-  return fb;
+  for (const k in likes) likes[k].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  return { feedback: fb, likes };
 }
 function applyData(payload) {
   lastPayload = payload;
@@ -447,11 +483,12 @@ function applyData(payload) {
   for (const pr of payload.pulls || []) for (const p of pr.files || []) { const k = nfc(p); if (!fileAt.has(k) || pr.created < fileAt.get(k)) fileAt.set(k, pr.created); }
   for (const f of fileByPath.values()) f.at = fileAt.get(f.path) || '';
   const people = new Set(); for (const f of fileByPath.values()) people.add(f.person); if (cfg.name) people.add(cfg.name);
-  data = { weeks, personal, fileByPath, people:[...people], feedback: buildFeedback(payload.feedbackFiles, payload.prComments, local.feedback), branches: (payload.trees || []).map(t => t.branch), at: payload.at };
+  data = { weeks, personal, fileByPath, people:[...people], feedback:{}, likes:{}, branches: (payload.trees || []).map(t => t.branch), at: payload.at };
+  Object.assign(data, buildFeedback(payload.feedbackFiles, payload.prComments, local.feedback));
   renderAll();
   if (local.handle && local.perm === 'granted') scanLocal().then(() => { rebuildFeedback(); renderAll(); }).catch(() => {});
 }
-function rebuildFeedback() { if (data && lastPayload) data.feedback = buildFeedback(lastPayload.feedbackFiles, lastPayload.prComments, local.feedback); }
+function rebuildFeedback() { if (data && lastPayload) Object.assign(data, buildFeedback(lastPayload.feedbackFiles, lastPayload.prComments, local.feedback)); }
 // PR 목록 + 각 PR 에 포함된 파일 경로. 파일 목록은 PR 번호별로 영구 캐시하고, 열린 PR 만 updated_at 이 바뀌면 다시 받는다 (API 호출 절약)
 async function loadPulls() {
   const list = await ghAll(`/repos/${OWNER}/${REPO}/pulls?state=all&sort=created&direction=asc`);
@@ -541,9 +578,9 @@ async function readBranch() {
   try { const g = await local.handle.getDirectoryHandle('.git'); const f = await (await g.getFileHandle('HEAD')).getFile(); const t = (await f.text()).trim(); local.branch = t.startsWith('ref: refs/heads/') ? t.slice(16) : t.slice(0, 7) + ' (detached)'; } catch {}
 }
 async function readLocalFeedback() {
-  local.feedback = [];
+  local.feedback = []; local.fbLoaded = false;
   if (!local.handle || local.perm !== 'granted' || !cfg.name) return;
-  try { const d = await local.handle.getDirectoryHandle(FEEDBACK_DIR); const f = await (await d.getFileHandle(`${cfg.name}.json`)).getFile(); const arr = JSON.parse(await f.text()); if (Array.isArray(arr)) local.feedback = arr; } catch {}
+  try { const d = await local.handle.getDirectoryHandle(FEEDBACK_DIR); const f = await (await d.getFileHandle(`${cfg.name}.json`)).getFile(); const arr = JSON.parse(await f.text()); if (Array.isArray(arr)) { local.feedback = arr; local.fbLoaded = true; } } catch {}
 }
 async function scanLocal() {
   local.files = new Map();
@@ -559,15 +596,18 @@ async function scanLocal() {
     }
   }
 }
-async function writeLocalFeedback(entry) {
+// 내 feedback/<이름>.json 을 읽어 fn(배열) 결과로 통째로 다시 쓴다 (추가·수정·삭제·따봉 공통). fn 이 null 을 돌려주면 쓰지 않고 false.
+// 로컬 파일이 없으면 GitHub 에 올라간 내 항목(모든 브랜치 합집합)에서 시작해 기존 항목이 사라지지 않게 한다.
+async function updateLocalFeedback(fn) {
+  await readLocalFeedback();
+  const base = local.fbLoaded ? local.feedback : [...myPushedFeedback(lastPayload?.feedbackFiles).values()].map(x => x.entry);
+  const arr = fn(base.slice()); if (!arr) return false;
   const d = await local.handle.getDirectoryHandle(FEEDBACK_DIR, { create:true });
-  const fname = `${cfg.name}.json`;
-  let arr = [];
-  try { const f = await (await d.getFileHandle(fname)).getFile(); const j = JSON.parse(await f.text()); if (Array.isArray(j)) arr = j; } catch {}
-  arr.push(entry);
-  const fh = await d.getFileHandle(fname, { create:true }); const ws = await fh.createWritable(); await ws.write(JSON.stringify(arr, null, 2) + '\n'); await ws.close();
-  local.feedback = arr;
+  const fh = await d.getFileHandle(`${cfg.name}.json`, { create:true }); const ws = await fh.createWritable(); await ws.write(JSON.stringify(arr, null, 2) + '\n'); await ws.close();
+  local.feedback = arr; local.fbLoaded = true; return true;
 }
+// 피드백 글 항목 찾기: 경로 + 작성 시각이 식별자
+const isFbEntry = (e, path, date) => !e.like && nfc(e.path) === path && (e.date || '') === date;
 
 // ---------- 렌더 ----------
 function updateHeader() {
@@ -613,14 +653,19 @@ function weekRows(w) {
 }
 // ---------- 메달 순위표: 모든 주차의 🥇🥈🥉 를 올림픽식으로 합산 ----------
 // 순위(rank)는 정렬과 무관하게 승점 → 금 → 은 → 동 순으로 매기고, 전부 같으면 공동 순위
-const byOlympic = (a, b) => b.points - a.points || b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze;
+// 순위 동률 풀기: 승점 → 푼 문제 → 금 → 은 → 동 → 👍
+const byOlympic = (a, b) => b.points - a.points || b.solved - a.solved || b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze || b.likes - a.likes;
 function medalTally() {
   const KEYS = ['gold', 'silver', 'bronze'];
-  const tally = new Map(data.people.map(p => [p, { person:p, gold:0, silver:0, bronze:0, points:0, wins:[] }]));
+  const tally = new Map(data.people.map(p => [p, { person:p, gold:0, silver:0, bronze:0, solved:0, likes:0, points:0, wins:[] }]));
   for (const w of data.weeks) for (const [person, m] of medalRank(weekRows(w))) {
     const t = tally.get(person); if (!t) continue;
-    const k = KEYS[m.rank - 1]; t[k]++; t.points += MEDAL_POINTS[k]; t.wins.push(`Week ${w.num} ${m.icon}`);
+    t[KEYS[m.rank - 1]]++; t.wins.push(`Week ${w.num} ${m.icon}`);
   }
+  // 푼 문제 = 모든 주차 합계 (머지 전 포함, personal 제외) · 👍 = 내 파일이 받은 따봉 (본인 것은 buildFeedback 에서 이미 제외, personal 포함)
+  for (const t of tally.values()) t.solved = data.weeks.reduce((s, x) => s + x.problems.filter(p => p.files.some(f => f.person === t.person)).length, 0);
+  for (const [p, arr] of Object.entries(data.likes || {})) { const t = tally.get(data.fileByPath.get(p)?.person); if (t) t.likes += arr.length; }
+  for (const t of tally.values()) t.points = Object.entries(MEDAL_POINTS).reduce((s, [k, v]) => s + t[k] * v, 0);
   const list = [...tally.values()].sort((a, b) => byOlympic(a, b) || byName(a, b));
   list.forEach((t, i) => { t.rank = i > 0 && byOlympic(list[i - 1], t) === 0 ? list[i - 1].rank : i + 1; });
   return list;
@@ -640,13 +685,13 @@ function medalTableHtml() {
   const th = (k, cls = '') => `<th${cls ? ` class="${cls}"` : ''}><button class="sorth" data-msort="${k}" title="${esc(MEDAL_SORTS[k].title)} — 눌러서 정렬">${MEDAL_SORTS[k].label}${arrow(k)}</button></th>`;
   const num = (n, cls = '') => `<td class="${cls}${n ? '' : ' zero'}">${n}</td>`;
   const sum = k => list.reduce((s, t) => s + t[k], 0);
-  let html = `<h3 class="medals-h">🏅 메달 순위 <span class="muted small">모든 주차 합산 · 승점 = 🥇 3점 · 🥈 2점 · 🥉 1점</span></h3>`;
-  html += `<div class="tablewrap"><table class="board medals"><thead><tr><th title="승점 → 금 → 은 → 동 순 (모두 같으면 공동 순위)">순위</th>${th('name', 'name')}${th('gold')}${th('silver')}${th('bronze')}${th('points')}</tr></thead><tbody>`;
+  let html = `<h3 class="medals-h">🏅 메달 순위 <span class="muted small">모든 주차 합산 · 승점 = 🥇3 + 🥈2 + 🥉1 + 푼 문제×2 + 👍×1</span></h3>`;
+  html += `<div class="tablewrap"><table class="board medals"><thead><tr><th title="승점 → 푼 문제 → 금 → 은 → 동 → 👍 순 (모두 같으면 공동 순위)">순위</th>${th('name', 'name')}${th('gold')}${th('silver')}${th('bronze')}${th('solved')}${th('likes')}${th('points')}</tr></thead><tbody>`;
   for (const t of list) {
-    html += `<tr class="${t.person === cfg.name ? 'me' : ''}"><td class="rank">${t.rank}</td><th class="name"><button class="link" data-person="${esc(t.person)}" title="${esc(t.wins.length ? t.wins.join(' · ') : '아직 메달 없음')}">${esc(t.person)}</button>${t.person === cfg.name ? ' <span class="muted small">(나)</span>' : ''}</th>${num(t.gold)}${num(t.silver)}${num(t.bronze)}${num(t.points, 'sum pts')}</tr>`;
+    html += `<tr class="${t.person === cfg.name ? 'me' : ''}"><td class="rank">${t.rank}</td><th class="name"><button class="link" data-person="${esc(t.person)}" title="${esc((t.wins.length ? t.wins.join(' · ') : '아직 메달 없음') + ` · 푼 문제 ${t.solved} · 👍 ${t.likes}`)}">${esc(t.person)}</button>${t.person === cfg.name ? ' <span class="muted small">(나)</span>' : ''}</th>${num(t.gold)}${num(t.silver)}${num(t.bronze)}${num(t.solved)}${num(t.likes)}${num(t.points, 'sum pts')}</tr>`;
   }
-  html += `</tbody><tfoot><tr><td></td><th class="name">합계</th><td>${sum('gold')}</td><td>${sum('silver')}</td><td>${sum('bronze')}</td><td>${sum('points')}</td></tr></tfoot></table></div>`;
-  html += `<p class="muted small" style="margin-top:8px">각 주차 푼 수 1~3위에게 🥇🥈🥉 (동률이면 PR을 먼저 올린 순 · PR에 안 올린 풀이가 있으면 뒤로 · 진행 중인 주차 포함). 머리글을 누르면 그 기준으로 정렬, 다시 누르면 역순. 순위 열은 정렬과 상관없이 승점 → 금 → 은 → 동 순이고, 이름에 마우스를 올리면 어느 주차에서 받았는지 보입니다.</p>`;
+  html += `</tbody><tfoot><tr><td></td><th class="name">합계</th><td>${sum('gold')}</td><td>${sum('silver')}</td><td>${sum('bronze')}</td><td>${sum('solved')}</td><td>${sum('likes')}</td><td>${sum('points')}</td></tr></tfoot></table></div>`;
+  html += `<p class="muted small" style="margin-top:8px"><b>🥇🥈🥉</b> = 각 주차 푼 수 1~3위 (동률이면 PR을 먼저 올린 순 · PR에 안 올린 풀이가 있으면 뒤로 · 진행 중인 주차 포함). <b>푼 문제</b> = 모든 주차 합계 (머지 전 포함, personal 제외). <b>👍</b> = 내 풀이가 받은 따봉 — 풀이 카드의 👍 버튼으로 누르고, 본인 코드에는 못 누르며 한 파일에 한 사람당 하나 (personal 포함). 머리글을 누르면 그 기준으로 정렬, 다시 누르면 역순. 순위 열은 정렬과 상관없이 승점 → 푼 문제 → 금 → 은 → 동 → 👍 순이고, 이름에 마우스를 올리면 세부 내역이 보입니다.</p>`;
   return html;
 }
 function renderBoard() {
@@ -671,7 +716,7 @@ function renderBoard() {
   const arrow = k => sk === k ? (sd === 'asc' ? ' ▲' : ' ▼') : '';
   html += `<div class="sortbar small"><span class="muted">정렬</span>${Object.entries(SORTS).map(([k, x]) => `<button class="chip ${k === sk ? 'active' : ''}" data-sort="${k}" title="${esc(x.title)}">${x.label}${arrow(k)}</button>`).join('')}<span class="muted">같은 기준을 다시 누르면 역순 · 표의 이름/합계/전체 머리글을 눌러도 됩니다</span></div>`;
 
-  html += `<div class="tablewrap"><table class="board"><thead><tr><th class="name"><button class="sorth" data-sort="name" title="이름순 정렬">이름${arrow('name')}</button></th>${w.problems.map(p => `<th title="${esc(p.name)}"><button class="hdr" data-prob="${p.num}">${pad2(p.num)}</button></th>`).join('')}<th><button class="sorth" data-sort="count" title="이번 주 푼 수로 정렬 (괄호: 머지 전)">합계${arrow('count')}</button></th><th><button class="sorth" data-sort="total" title="모든 주차 합계로 정렬">전체${arrow('total')}</button></th></tr></thead><tbody>`;
+  html += `<div class="tablewrap"><table class="board"><thead><tr><th class="name"><button class="sorth" data-sort="name" title="이름순 정렬">이름${arrow('name')}</button></th>${w.problems.map(p => `<th><button class="hdr" data-prob="${p.num}" data-tip="${pad2(p.num)} ${esc(p.name)} · 푼 사람 ${p.files.length}명">${pad2(p.num)}</button></th>`).join('')}<th><button class="sorth" data-sort="count" title="이번 주 푼 수로 정렬 (괄호: 머지 전)">합계${arrow('count')}</button></th><th><button class="sorth" data-sort="total" title="모든 주차 합계로 정렬">전체${arrow('total')}</button></th></tr></thead><tbody>`;
   for (const r of rows) {
     const m = medal.get(r.person);
     html += `<tr class="${r.person === cfg.name ? 'me' : ''}"><th class="name">${m ? `<span class="medal" title="이번 주 ${m.rank}위 · ${r.count}문제${r.doneAt ? ` · ${fmtDate(r.doneAt)} PR 올림` : ''}">${m.icon}</span>` : ''}<button class="link" data-person="${esc(r.person)}">${esc(r.person)}</button>${r.person === cfg.name ? ' <span class="muted small">(나)</span>' : ''}</th>`;
@@ -685,8 +730,7 @@ function renderBoard() {
   }
   const total = w.problems.reduce((s, p) => s + p.files.length, 0), grand = weeks.reduce((s, x) => s + x.problems.reduce((t, p) => t + p.files.length, 0), 0);
   html += `</tbody><tfoot><tr><th class="name">푼 인원</th>${w.problems.map(p => `<td>${p.files.length}</td>`).join('')}<td>${total}</td><td>${grand}</td></tr></tfoot></table></div>`;
-  html += `<div class="legend">${w.problems.map(p => `<button class="link" data-prob="${p.num}">${pad2(p.num)} ${esc(p.name)}</button>`).join('')}</div>`;
-  html += `<p class="muted small" style="margin-top:12px">이름 클릭 → 그 사람 풀이 전체 · 문제 번호 클릭 → 그 문제의 모든 풀이 비교 · 배지 클릭 → 해당 파일과 피드백. <b>실선</b> = main에 머지됨, <b>점선 + 연회색 배경</b> = 푸시는 됐지만 PR 머지 전, <b>회색 캡슐</b>(내 행만) = 내 로컬에만 있음(아직 푸시 안 됨), <b>＋</b> = 내가 아직 안 푼 문제 (클릭하면 그 문제가 선택된 채로 파일 만들기로 이동). 합계 괄호는 머지 전 개수. <b>🥇🥈🥉</b> = 이번 주 푼 수 1~3위 (동률이면 PR을 먼저 올린 순, PR에 안 올린 풀이가 있으면 뒤로).</p>`;
+  html += `<p class="muted small" style="margin-top:12px">이름 클릭 → 그 사람 풀이 전체 · 문제 번호에 마우스 올리면 문제 이름, 클릭 → 그 문제의 모든 풀이 비교 · 배지 클릭 → 해당 파일과 피드백. <b>실선</b> = main에 머지됨, <b>점선 + 연회색 배경</b> = 푸시는 됐지만 PR 머지 전, <b>회색 캡슐</b>(내 행만) = 내 로컬에만 있음(아직 푸시 안 됨), <b>＋</b> = 내가 아직 안 푼 문제 (클릭하면 그 문제가 선택된 채로 파일 만들기로 이동). 합계 괄호는 머지 전 개수. <b>🥇🥈🥉</b> = 이번 주 푼 수 1~3위 (동률이면 PR을 먼저 올린 순, PR에 안 올린 풀이가 있으면 뒤로).</p>`;
   html += medalTableHtml();
   root.innerHTML = html;
 }
@@ -696,21 +740,38 @@ function openDetail(title, sub, body) { $('#detailTitle').textContent = title; $
 function closeDetail() { $('#detail').hidden = true; }
 function fbItem(c) {
   const tag = c.source === 'pr' ? `<span class="tag pr">PR 리뷰${c.line ? ` L${c.line}` : ''}</span>` : c.source === 'local' ? '<span class="tag local">로컬 · 푸시 전</span>' : `<span class="tag">피드백</span>${c.branch && c.branch !== BRANCH ? ` <span class="tag branch">${esc(c.branch)} 브랜치</span>` : ''}`;
-  return `<div class="fb-item"><div class="fb-meta"><b>${esc(c.author)}</b> ${tag} <span class="muted small">${fmtDate(c.date)}</span> ${c.url ? `<a class="small" href="${esc(c.url)}" target="_blank" rel="noopener">↗</a>` : ''}</div><div class="fb-body">${esc(c.body)}</div></div>`;
+  // 내가 쓴 피드백(PR 리뷰 제외)은 폴더가 연결돼 있으면 수정/삭제 가능 — 내 feedback/<이름>.json 을 고쳐 쓰고, 푸시하면 모두에게 반영
+  const mine = c.author === cfg.name && c.source !== 'pr' && local.handle && local.perm === 'granted';
+  const act = mine ? `<span class="fb-act"><button class="link fb-edit" title="내용 수정">수정</button><button class="link fb-del" title="이 피드백 삭제">삭제</button></span>` : '';
+  return `<div class="fb-item" data-date="${esc(c.date)}"><div class="fb-meta"><b>${esc(c.author)}</b> ${tag} <span class="muted small">${fmtDate(c.date)}${c.edited ? ` · 수정됨 ${fmtDate(c.edited)}` : ''}</span> ${c.url ? `<a class="small" href="${esc(c.url)}" target="_blank" rel="noopener">↗</a>` : ''}${act}</div><div class="fb-body">${esc(c.body)}</div></div>`;
 }
+// 따봉 버튼: 내 코드면 개수만, 아니면 누르기/취소 토글. 누른 사람 이름 표시 (푸시 전이면 표시)
+function likeHtml(f) {
+  const lk = data.likes[f.path] || [], n = lk.length;
+  const who = lk.map(l => l.author + (l.source === 'local' ? '(푸시 전)' : '')).join(' · ');
+  const whoHtml = n ? `<span class="like-who muted small">${esc(who)}</span>` : '';
+  if (f.person === cfg.name) return `<span class="like own" title="내 코드에는 못 누릅니다${n ? ' · 받은 따봉: ' + esc(who) : ''}">👍 ${n}</span>${whoHtml}`;
+  const liked = lk.some(l => l.author === cfg.name);
+  return `<button class="btn small like-btn${liked ? ' on' : ''}" title="${liked ? '따봉 취소' : '좋은 코드에 따봉! (받는 사람 1점)'}">👍 ${n}</button>${whoHtml}`;
+}
+function fbSection(f) {
+  const fb = data.feedback[f.path] || [];
+  return `<div class="fb"><div class="fb-head">피드백 <span class="count">${fb.length}</span><span class="spacer"></span>${likeHtml(f)}</div><div class="fb-list">${fb.map(fbItem).join('') || '<p class="muted small">아직 피드백이 없습니다.</p>'}</div>${fbForm()}</div>`;
+}
+// 카드의 피드백/따봉 부분만 다시 그림 (저장·수정·삭제·따봉 후)
+function refreshCard(card) { const f = data.fileByPath.get(card.dataset.path); if (f) card.querySelector('.fb').outerHTML = fbSection(f); }
 function fbForm() {
   if (!cfg.name) return `<p class="muted small">피드백을 남기려면 <button class="link goto-create">내 파일 만들기</button>에서 파일 이름을 정해주세요.</p>`;
   const ready = local.handle && local.perm === 'granted';
   return `<div class="fb-form"><textarea placeholder="피드백을 남겨보세요 → ${FEEDBACK_DIR}/${esc(cfg.name)}.json 에 저장됩니다. 풀이와 함께 커밋/푸시하면 모두에게 보입니다."></textarea><div class="row"><button class="btn small primary fb-submit">${ready ? '피드백 저장' : '피드백 JSON 복사'}</button><span class="muted small">${ready ? 'Ctrl+Enter · 저장 후 GitHub Desktop에서 커밋 → Push' : `폴더가 연결되지 않아 복사만 됩니다 — <button class="link goto-settings">설정</button>에서 폴더를 연결하면 바로 저장됩니다`}</span></div></div>`;
 }
 function fileCard(f, expanded = false) {
-  const fb = data.feedback[f.path] || [];
   const where = f.personal ? `personal/${esc(f.person)}` : `Week ${f.week} · ${pad2(f.prob)}`;
   return `<div class="fcard" data-path="${esc(f.path)}">
     <div class="fcard-head"><span class="dot" style="background:${colorOf(f.ext)}"></span><strong>${esc(f.fname)}</strong>${f.merged ? '' : `<span class="tag branch" title="아직 main에 머지되지 않음">${esc(f.branch)} 브랜치</span>`}<span class="muted small">${where} · ${esc(f.path)}</span><span class="spacer"></span>
       <a class="small" href="${webUrl(f.branch, f.path)}" target="_blank" rel="noopener">GitHub ↗</a><button class="btn small toggle-code">${expanded ? '코드 접기' : '코드 보기'}</button></div>
     <div class="code" ${expanded ? '' : 'hidden'}><pre class="muted">불러오는 중…</pre></div>
-    <div class="fb"><div class="fb-head">피드백 <span class="count">${fb.length}</span></div><div class="fb-list">${fb.map(fbItem).join('') || '<p class="muted small">아직 피드백이 없습니다.</p>'}</div>${fbForm()}</div>
+    ${fbSection(f)}
   </div>`;
 }
 const HL_LANG = { cpp:'cpp', cc:'cpp', h:'cpp', hpp:'cpp', c:'c', py:'python', java:'java', js:'javascript', ts:'typescript', kt:'kotlin', go:'go', rs:'rust', cs:'csharp' };
@@ -759,12 +820,55 @@ async function submitFeedback(card, btn) {
   }
   btn.disabled = true;
   try {
-    await writeLocalFeedback(entry);
-    rebuildFeedback();
-    const list = data.feedback[path] || [];
-    card.querySelector('.fb-list').innerHTML = list.map(fbItem).join('');
-    card.querySelector('.fb-head .count').textContent = list.length;
-    ta.value = ''; toast(`저장됨: ${FEEDBACK_DIR}/${cfg.name}.json — 커밋 후 Push 하면 공유됩니다`);
+    await updateLocalFeedback(arr => [...arr, entry]);
+    rebuildFeedback(); refreshCard(card);
+    toast(`저장됨: ${FEEDBACK_DIR}/${cfg.name}.json — 커밋 후 Push 하면 공유됩니다`);
+  } catch (e) { toast('저장 실패: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+function startEdit(card, item) {
+  const path = card.dataset.path, date = item.dataset.date;
+  const cur = (data.feedback[path] || []).find(c => c.author === cfg.name && c.source !== 'pr' && c.date === date); if (!cur) return;
+  item.classList.add('editing');
+  item.querySelector('.fb-body').innerHTML = `<textarea class="fb-edit-ta"></textarea><div class="row" style="margin:0"><button class="btn small primary fb-save">저장</button><button class="btn small fb-cancel">취소</button><span class="muted small">Ctrl+Enter 저장 · Esc 취소</span></div>`;
+  const ta = item.querySelector('.fb-edit-ta'); ta.value = cur.body; ta.focus();
+}
+async function saveEdit(card, item, btn) {
+  const path = card.dataset.path, date = item.dataset.date, text = item.querySelector('.fb-edit-ta').value.trim();
+  if (!text) { toast('내용을 입력하세요'); return; }
+  btn.disabled = true;
+  try {
+    const ok = await updateLocalFeedback(arr => arr.some(e => isFbEntry(e, path, date)) ? arr.map(e => isFbEntry(e, path, date) ? { ...e, text, edited: new Date().toISOString() } : e) : null);
+    if (!ok) { toast('원본 항목을 내 피드백 파일에서 찾지 못했습니다'); refreshCard(card); return; }
+    rebuildFeedback(); refreshCard(card); toast('수정됨 — 커밋 후 Push 하면 반영됩니다');
+  } catch (e) { toast('수정 실패: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+async function deleteFeedback(card, item) {
+  const path = card.dataset.path, date = item.dataset.date;
+  if (!confirm('이 피드백을 삭제할까요?\n(커밋 후 Push 하면 모두에게서 사라집니다)')) return;
+  try {
+    const ok = await updateLocalFeedback(arr => arr.some(e => isFbEntry(e, path, date)) ? arr.filter(e => !isFbEntry(e, path, date)) : null);
+    if (!ok) { toast('항목을 내 피드백 파일에서 찾지 못했습니다'); return; }
+    rebuildFeedback(); refreshCard(card); toast('삭제됨 — 커밋 후 Push 하면 반영됩니다');
+  } catch (e) { toast('삭제 실패: ' + e.message); }
+}
+// 따봉 누르기/취소: { path, date, like:true } 항목을 내 피드백 파일에 넣거나 뺌
+async function toggleLike(card, btn) {
+  if (!cfg.name) { toast('따봉을 누르려면 설정에서 파일 이름을 정해주세요'); return; }
+  const path = card.dataset.path, f = data.fileByPath.get(path);
+  if (f && f.person === cfg.name) { toast('내 코드에는 못 누릅니다'); return; }
+  const liked = (data.likes[path] || []).some(l => l.author === cfg.name);
+  if (!(local.handle && local.perm === 'granted')) {
+    if (liked) { toast('폴더가 연결되지 않아 취소할 수 없습니다 — 설정에서 폴더를 연결하세요'); return; }
+    await copyText(JSON.stringify({ path, date: new Date().toISOString(), like: true }, null, 2));
+    toast(`복사됨 — ${FEEDBACK_DIR}/${cfg.name}.json 배열 안에 붙여넣고 푸시하세요`); return;
+  }
+  btn.disabled = true;
+  try {
+    await updateLocalFeedback(arr => liked ? arr.filter(e => !(e.like && nfc(e.path) === path)) : [...arr.filter(e => !(e.like && nfc(e.path) === path)), { path, date: new Date().toISOString(), like: true }]);
+    rebuildFeedback(); refreshCard(card); renderBoard();
+    toast(liked ? '따봉 취소됨 — 커밋 후 Push 하면 반영됩니다' : '👍 따봉! — 커밋 후 Push 하면 반영됩니다');
   } catch (e) { toast('저장 실패: ' + e.message); }
   finally { btn.disabled = false; }
 }
@@ -776,11 +880,12 @@ const targetPath = () => { const w = curWeek(), p = curProb(); return w && p ? `
 // 설정 탭의 "저장소 폴더 연결" 카드
 function renderFolder() {
   const fs = $('#folderStatus');
-  const pending = local.feedback.length ? (() => { const pushed = new Set(); for (const f of lastPayload?.feedbackFiles || []) if (f.author === cfg.name) for (const e of f.entries) pushed.add(`${e.path}|${e.date}`); return local.feedback.filter(e => !pushed.has(`${e.path}|${e.date}`)).length; })() : 0;
+  // 푸시 안 된 피드백/따봉 변경 = 로컬에만 있는 항목(추가·수정) + GitHub 에만 있는 항목(삭제)
+  const pending = cfg.name && local.fbLoaded ? (() => { const g = myPushedFeedback(lastPayload?.feedbackFiles), l = new Set(local.feedback.filter(fbValid).map(fbKey)); let n = 0; for (const k of l) if (!g.has(k)) n++; for (const k of g.keys()) if (!l.has(k)) n++; return n; })() : 0;
   if (!('showDirectoryPicker' in window)) fs.innerHTML = `<div class="box warn">이 브라우저는 폴더에 직접 쓰기를 지원하지 않습니다. <b>Chrome</b> 또는 <b>Edge</b>로 이 파일을 열어주세요. Brave는 기본으로 꺼져 있어 <code>brave://flags/#file-system-access-api</code> 를 Enabled로 바꾸면 됩니다. (그 외 브라우저는 내 파일 만들기의 "내용 복사" 후 직접 저장)</div>`;
   else if (!local.handle) { const sd = selfDir(); fs.innerHTML = `<div class="row"><button id="btnConnect" class="btn primary">problem-solving 폴더 선택</button><span class="muted small">clone 받은 저장소의 최상위 폴더(안에 <code>.git</code>, <code>week1-…</code> 폴더가 있는 곳)를 선택하세요. 한 번 선택하면 기억됩니다.</span></div>${sd ? `<div class="box warn" style="margin-top:6px">브라우저 보안상 페이지가 폴더를 스스로 열 수는 없어서 한 번은 직접 골라야 합니다. 이 파일이 있는 폴더를 그대로 선택하면 됩니다:<br><code>${esc(sd)}</code></div>` : ''}`; }
   else if (local.perm !== 'granted') fs.innerHTML = `<div class="row"><span>📁 ${esc(local.handle.name)}</span><button id="btnPerm" class="btn primary">폴더 접근 다시 허용</button><button id="btnConnect" class="btn small">다른 폴더 선택</button><span class="muted small">브라우저를 다시 열면 권한을 한 번 더 확인합니다.</span></div>`;
-  else fs.innerHTML = `<div class="row"><span class="box ok" style="margin:0">📁 연결됨: <b>${esc(local.handle.name)}</b>${local.branch ? ` · 브랜치 <code>${esc(local.branch)}</code>` : ''} · 내 로컬 풀이 ${local.files.size}개${pending ? ` · 푸시 안 된 피드백 ${pending}개` : ''}</span><button id="btnRescan" class="btn small">다시 스캔</button><button id="btnConnect" class="btn small">다른 폴더 선택</button></div>${local.branch === 'main' ? '<div class="box warn">지금 <b>main</b> 브랜치입니다. GitHub Desktop이나 터미널에서 본인 브랜치로 전환한 뒤 커밋하세요.</div>' : ''}`;
+  else fs.innerHTML = `<div class="row"><span class="box ok" style="margin:0">📁 연결됨: <b>${esc(local.handle.name)}</b>${local.branch ? ` · 브랜치 <code>${esc(local.branch)}</code>` : ''} · 내 로컬 풀이 ${local.files.size}개${pending ? ` · 푸시 안 된 피드백/따봉 변경 ${pending}개` : ''}</span><button id="btnRescan" class="btn small">다시 스캔</button><button id="btnConnect" class="btn small">다른 폴더 선택</button></div>${local.branch === 'main' ? '<div class="box warn">지금 <b>main</b> 브랜치입니다. GitHub Desktop이나 터미널에서 본인 브랜치로 전환한 뒤 커밋하세요.</div>' : ''}`;
   $('#btnConnect')?.addEventListener('click', connectFolder);
   $('#btnPerm')?.addEventListener('click', requestPerm);
   $('#btnRescan')?.addEventListener('click', async () => { await scanLocal(); rebuildFeedback(); renderAll(); toast('스캔 완료'); });
@@ -1075,6 +1180,20 @@ function bindEvents() {
     else if (t.dataset.prob) openProblem(state.week, +t.dataset.prob);
     else if (t.dataset.file) openFile(t.dataset.file);
   });
+  // [data-tip] 팝업: 마우스 오버/키보드 포커스에 표시, 스크롤·클릭·포커스 이탈 시 숨김. 화면 밖으로 안 나가게 좌우 여백 8px 안으로 밀어 넣음
+  const tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; document.body.appendChild(tip);
+  const hideTip = () => { tip.hidden = true; };
+  const showTip = el => {
+    tip.textContent = el.dataset.tip; tip.hidden = false;
+    const r = el.getBoundingClientRect(), tw = tip.offsetWidth, cx = r.left + r.width / 2;
+    const left = Math.max(8, Math.min(cx - tw / 2, window.innerWidth - tw - 8));
+    tip.style.left = `${left}px`; tip.style.top = `${r.bottom + 7}px`; tip.style.setProperty('--ax', `${cx - left}px`);
+  };
+  document.addEventListener('mouseover', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el); else if (!tip.hidden) hideTip(); });
+  document.addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); el ? showTip(el) : hideTip(); });
+  document.addEventListener('focusout', hideTip);
+  document.addEventListener('scroll', hideTip, true);
+  document.addEventListener('click', hideTip, true);
   $('#detailClose').addEventListener('click', closeDetail);
   $('#detail').addEventListener('click', e => { if (e.target === $('#detail')) closeDetail(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#detail').hidden) closeDetail(); });
@@ -1082,10 +1201,20 @@ function bindEvents() {
     const card = e.target.closest('.fcard');
     if (e.target.closest('.toggle-code') && card) { const code = card.querySelector('.code'); code.hidden = !code.hidden; e.target.closest('.toggle-code').textContent = code.hidden ? '코드 보기' : '코드 접기'; if (!code.hidden) loadCode(card); }
     else if (e.target.closest('.fb-submit') && card) submitFeedback(card, e.target.closest('.fb-submit'));
+    else if (e.target.closest('.like-btn') && card) toggleLike(card, e.target.closest('.like-btn'));
+    else if (e.target.closest('.fb-edit') && card) startEdit(card, e.target.closest('.fb-item'));
+    else if (e.target.closest('.fb-save') && card) saveEdit(card, e.target.closest('.fb-item'), e.target.closest('.fb-save'));
+    else if (e.target.closest('.fb-cancel') && card) refreshCard(card);
+    else if (e.target.closest('.fb-del') && card) deleteFeedback(card, e.target.closest('.fb-item'));
     else if (e.target.closest('.goto-settings')) { closeDetail(); showTab('settings'); }
     else if (e.target.closest('.goto-create')) { closeDetail(); showTab('create'); }
   });
-  $('#detailBody').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && e.target.matches('.fb-form textarea')) { const card = e.target.closest('.fcard'); submitFeedback(card, card.querySelector('.fb-submit')); } });
+  $('#detailBody').addEventListener('keydown', e => {
+    const card = e.target.closest('.fcard'); if (!card) return;
+    const enter = e.key === 'Enter' && (e.ctrlKey || e.metaKey);
+    if (e.target.matches('.fb-form textarea') && enter) submitFeedback(card, card.querySelector('.fb-submit'));
+    else if (e.target.matches('.fb-edit-ta')) { const item = e.target.closest('.fb-item'); if (enter) saveEdit(card, item, item.querySelector('.fb-save')); else if (e.key === 'Escape') { e.stopPropagation(); refreshCard(card); } }   // Esc 는 패널 닫기가 아니라 수정 취소
+  });
   // 파일 만들기
   $('#cName').addEventListener('input', () => { clearTimeout(nameTimer); nameTimer = setTimeout(applyNameChange, 400); $('#cTarget').textContent = (curWeek() && curProb()) ? `${curWeek().dir}/${curProb().dir}/${$('#cName').value.trim() || '이름'}.${$('#cExt').value}` : `${$('#cName').value.trim() || '이름'}.${$('#cExt').value}`; });
   $('#cName').addEventListener('blur', () => { clearTimeout(nameTimer); applyNameChange(); });
