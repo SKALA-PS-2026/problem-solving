@@ -17,3 +17,6 @@ node_modules/
 .vscode/
 .idea/
 .DS_Store
+
+# 개인 설정 (new.ps1 / up.ps1 이 읽는 파일, 각자 PC에만)
+local.ps1
