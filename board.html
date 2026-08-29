@@ -41,6 +41,8 @@
   .btn:hover { background:var(--hover); }
   .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; } .btn.primary:hover { opacity:.9; }
   .btn.small { padding:3px 8px; font-size:12px; }
+  a.btn { display:inline-block; text-decoration:none; } a.btn:hover { text-decoration:none; }
+  .btn.solve { font-weight:700; font-size:14px; padding:8px 16px; margin:6px 0 2px; box-shadow:0 2px 8px rgba(9,105,218,.35); }
   .btn:disabled { opacity:.5; cursor:not-allowed; }
   button.link { background:none; border:none; color:var(--accent); font:inherit; cursor:pointer; padding:0; }
   button.link:hover { text-decoration:underline; }
@@ -64,6 +66,7 @@
   .chip.gauge::before { content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; background:linear-gradient(90deg, var(--g-done) 0 var(--p1), var(--g-loc) var(--p1) var(--p2), transparent var(--p2)); }
   .chip.full { border-color:var(--ok); } .chip.full small { color:var(--ok); }
   .chip.active { background:var(--accent-bg); border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .chip.sel { border-color:var(--err) !important; box-shadow:0 0 0 2px var(--err); }   /* 파일 만들기 탭에서 선택된 주차: 배경색 없이 빨간 외곽선만 */
   .chip small { color:var(--muted); margin-left:4px; }
   .sortbar { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:0 0 8px; }
   .sortbar .chip { padding:2px 10px; font-size:12px; }
@@ -80,6 +83,13 @@
   table.board td.empty { color:var(--line); }
   table.board td.sum { font-weight:600; }
   table.board tfoot td, table.board tfoot th { color:var(--muted); font-size:12px; background:var(--bg); }
+  /* 메달 순위표: 순위 열이 맨 앞이라 이름 열을 고정하지 않음 */
+  table.board.medals { min-width:460px; }
+  table.board.medals th.name, table.board.medals thead th.name { position:static; }
+  table.board.medals td.rank { color:var(--muted); font-weight:600; width:48px; }
+  table.board.medals td.zero { color:var(--muted); font-weight:400; }
+  table.board.medals td.pts { font-weight:700; }
+  .medals-h { margin:22px 0 8px; font-size:15px; }
   .hdr { background:none; border:none; font:inherit; font-weight:600; color:var(--accent); cursor:pointer; padding:0; }
   .badge { display:inline-block; min-width:36px; padding:1px 6px; border-radius:10px; font-size:11.5px; font-weight:600; border:1px solid var(--c,#999); color:var(--c,#999); background:transparent; cursor:pointer; font-family:inherit; }
   .badge:hover { background:var(--c,#999); color:#fff; }
@@ -98,8 +108,8 @@
   .pcard.done { background:var(--ok-bg); border-color:var(--ok); } .pcard.done .pst { color:var(--ok); }
   .pcard.pushed { background:var(--accent-bg); border-color:var(--accent); } .pcard.pushed .pst { color:var(--accent); }
   .pcard.local { background:var(--warn-bg); border-color:var(--warn); } .pcard.local .pst { color:var(--warn); }
-  .pcard.sel { box-shadow:0 0 0 3px var(--accent); }
-  .pcard.sel::after { content:'✔ 선택'; position:absolute; top:6px; right:8px; font-size:11px; font-weight:700; color:var(--accent); }
+  .pcard.sel { border-color:var(--err) !important; box-shadow:0 0 0 2px var(--err); }
+  .pcard.sel::after { content:'✔ 선택'; position:absolute; top:6px; right:8px; font-size:11px; font-weight:700; color:var(--err); }
   .plegend { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:8px; align-items:center; }
   .pk { display:inline-block; width:12px; height:12px; border-radius:3px; border:2px solid var(--line); vertical-align:-2px; margin-right:3px; background:var(--card); }
   .pk.done { background:var(--ok-bg); border-color:var(--ok); } .pk.pushed { background:var(--accent-bg); border-color:var(--accent); } .pk.local { background:var(--warn-bg); border-color:var(--warn); }
@@ -293,9 +303,12 @@ const RAWB = `https://raw.githubusercontent.com/${OWNER}/${REPO}/`;
 const WEB = `https://github.com/${OWNER}/${REPO}`;
 const FEEDBACK_DIR = 'feedback';
 const CACHE_TTL = 10 * 60 * 1000;
-const CFG_KEY = 'psboard.cfg', CACHE_KEY = 'psboard.cache3', SORT_KEY = 'psboard.sort', PRFILES_KEY = 'psboard.prfiles';
+const CFG_KEY = 'psboard.cfg', CACHE_KEY = 'psboard.cache3', SORT_KEY = 'psboard.sort', MSORT_KEY = 'psboard.msort', PRFILES_KEY = 'psboard.prfiles';
 // 현황표 정렬 기준 (dir = 처음 눌렀을 때 방향)
 const SORTS = { count:{ label:'푼 수', dir:'desc', title:'이번 주에 올린 문제 수 (머지 전 포함)' }, merged:{ label:'머지됨', dir:'desc', title:'이번 주 main에 머지된 문제 수' }, total:{ label:'전체 주차', dir:'desc', title:'모든 주차 합계' }, name:{ label:'이름', dir:'asc', title:'이름 가나다/알파벳순' } };
+// 메달 순위표 정렬 기준 (모든 주차의 🥇🥈🥉 합산) · 승점 = 금 3 · 은 2 · 동 1
+const MEDAL_SORTS = { points:{ label:'승점', dir:'desc', title:'승점 = 금 3점 · 은 2점 · 동 1점' }, gold:{ label:'🥇 금', dir:'desc', title:'금메달 수 (주차 1위)' }, silver:{ label:'🥈 은', dir:'desc', title:'은메달 수 (주차 2위)' }, bronze:{ label:'🥉 동', dir:'desc', title:'동메달 수 (주차 3위)' }, name:{ label:'이름', dir:'asc', title:'이름 가나다/알파벳순' } };
+const MEDAL_POINTS = { gold:3, silver:2, bronze:1 };
 const EXT_COLOR = { py:'#3572A5', cpp:'#f34b7d', c:'#555555', java:'#b07219', js:'#e3c14a', ts:'#3178c6', kt:'#A97BFF', go:'#00ADD8', rs:'#dea584', cs:'#178600', swift:'#F05138' };
 const COMMENT_PREFIX = { py:'#', rb:'#', sh:'#' };
 
@@ -328,7 +341,7 @@ if (typeof cfg.token !== 'string') cfg.token = '';
 function saveCfg() { localStorage.setItem(CFG_KEY, JSON.stringify({ name: cfg.name, krName: cfg.krName, ext: cfg.ext, token: cfg.token })); }
 
 // ---------- 상태 ----------
-const state = { tab:'board', week:0, cWeek:0, cProb:0, rate:'', sort: (() => { const s = safeJson(localStorage.getItem(SORT_KEY)); return s && SORTS[s.key] ? { key: s.key, dir: s.dir === 'asc' ? 'asc' : 'desc' } : { key:'count', dir:'desc' }; })() };
+const state = { tab:'board', week:0, cWeek:0, cProb:0, rate:'', sort: (() => { const s = safeJson(localStorage.getItem(SORT_KEY)); return s && SORTS[s.key] ? { key: s.key, dir: s.dir === 'asc' ? 'asc' : 'desc' } : { key:'count', dir:'desc' }; })(), msort: (() => { const s = safeJson(localStorage.getItem(MSORT_KEY)); return s && MEDAL_SORTS[s.key] ? { key: s.key, dir: s.dir === 'asc' ? 'asc' : 'desc' } : { key:'points', dir:'desc' }; })() };
 let data = null, lastPayload = null;
 const local = { handle:null, perm:'none', files:new Map(), branch:'', feedback:[] };
 const codeCache = new Map();
@@ -586,6 +599,56 @@ function medalRank(rows) {
   const ranked = rows.filter(r => r.count > 0).sort((a, b) => b.count - a.count || byDone(a, b) || byName(a, b));
   return new Map(ranked.slice(0, 3).map((r, i) => [r.person, { icon: MEDALS[i], rank: i + 1 }]));
 }
+// 한 주차의 사람별 행: 문제 칸(main 파일/내 로컬 파일) · 푼 수 · 머지 수 · 모든 주차 합계 · PR 다 올린 시각
+function weekRows(w) {
+  return data.people.map(person => {
+    const cells = w.problems.map(p => ({ p, main: p.files.find(f => f.person === person) || null, local: person === cfg.name ? local.files.get(`${w.dir}/${p.dir}`) || null : null }));
+    const count = cells.filter(c => c.main).length, merged = cells.filter(c => c.main && c.main.merged).length, localCount = cells.filter(c => !c.main && c.local).length;
+    const total = data.weeks.reduce((s, x) => s + x.problems.filter(p => p.files.some(f => f.person === person)).length, 0);
+    // doneAt: 이번 주 올린 파일들이 PR 에 올라간 시각 중 가장 늦은 것 (PR 안 올라간 파일이 하나라도 있으면 '' = 아직 다 안 올림)
+    const ats = cells.filter(c => c.main).map(c => c.main.at || '');
+    const doneAt = ats.length && ats.every(Boolean) ? ats.reduce((m, a) => a > m ? a : m) : '';
+    return { person, cells, count, merged, unmerged: count - merged, localCount, total, doneAt };
+  });
+}
+// ---------- 메달 순위표: 모든 주차의 🥇🥈🥉 를 올림픽식으로 합산 ----------
+// 순위(rank)는 정렬과 무관하게 승점 → 금 → 은 → 동 순으로 매기고, 전부 같으면 공동 순위
+const byOlympic = (a, b) => b.points - a.points || b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze;
+function medalTally() {
+  const KEYS = ['gold', 'silver', 'bronze'];
+  const tally = new Map(data.people.map(p => [p, { person:p, gold:0, silver:0, bronze:0, points:0, wins:[] }]));
+  for (const w of data.weeks) for (const [person, m] of medalRank(weekRows(w))) {
+    const t = tally.get(person); if (!t) continue;
+    const k = KEYS[m.rank - 1]; t[k]++; t.points += MEDAL_POINTS[k]; t.wins.push(`Week ${w.num} ${m.icon}`);
+  }
+  const list = [...tally.values()].sort((a, b) => byOlympic(a, b) || byName(a, b));
+  list.forEach((t, i) => { t.rank = i > 0 && byOlympic(list[i - 1], t) === 0 ? list[i - 1].rank : i + 1; });
+  return list;
+}
+function setMedalSort(key) {
+  if (!MEDAL_SORTS[key]) return;
+  state.msort = state.msort.key === key ? { key, dir: state.msort.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: MEDAL_SORTS[key].dir };
+  try { localStorage.setItem(MSORT_KEY, JSON.stringify(state.msort)); } catch {}
+  renderBoard();
+}
+function medalTableHtml() {
+  const list = medalTally();
+  // 정렬: 선택 기준 → 동점이면 올림픽식 → 이름
+  const { key: sk, dir: sd } = state.msort, sgn = sd === 'asc' ? 1 : -1;
+  list.sort((a, b) => { const v = sk === 'name' ? byName(a, b) : a[sk] - b[sk]; return v ? v * sgn : (byOlympic(a, b) || byName(a, b)); });
+  const arrow = k => sk === k ? (sd === 'asc' ? ' ▲' : ' ▼') : '';
+  const th = (k, cls = '') => `<th${cls ? ` class="${cls}"` : ''}><button class="sorth" data-msort="${k}" title="${esc(MEDAL_SORTS[k].title)} — 눌러서 정렬">${MEDAL_SORTS[k].label}${arrow(k)}</button></th>`;
+  const num = (n, cls = '') => `<td class="${cls}${n ? '' : ' zero'}">${n}</td>`;
+  const sum = k => list.reduce((s, t) => s + t[k], 0);
+  let html = `<h3 class="medals-h">🏅 메달 순위 <span class="muted small">모든 주차 합산 · 승점 = 🥇 3점 · 🥈 2점 · 🥉 1점</span></h3>`;
+  html += `<div class="tablewrap"><table class="board medals"><thead><tr><th title="승점 → 금 → 은 → 동 순 (모두 같으면 공동 순위)">순위</th>${th('name', 'name')}${th('gold')}${th('silver')}${th('bronze')}${th('points')}</tr></thead><tbody>`;
+  for (const t of list) {
+    html += `<tr class="${t.person === cfg.name ? 'me' : ''}"><td class="rank">${t.rank}</td><th class="name"><button class="link" data-person="${esc(t.person)}" title="${esc(t.wins.length ? t.wins.join(' · ') : '아직 메달 없음')}">${esc(t.person)}</button>${t.person === cfg.name ? ' <span class="muted small">(나)</span>' : ''}</th>${num(t.gold)}${num(t.silver)}${num(t.bronze)}${num(t.points, 'sum pts')}</tr>`;
+  }
+  html += `</tbody><tfoot><tr><td></td><th class="name">합계</th><td>${sum('gold')}</td><td>${sum('silver')}</td><td>${sum('bronze')}</td><td>${sum('points')}</td></tr></tfoot></table></div>`;
+  html += `<p class="muted small" style="margin-top:8px">각 주차 푼 수 1~3위에게 🥇🥈🥉 (동률이면 PR을 먼저 올린 순 · PR에 안 올린 풀이가 있으면 뒤로 · 진행 중인 주차 포함). 머리글을 누르면 그 기준으로 정렬, 다시 누르면 역순. 순위 열은 정렬과 상관없이 승점 → 금 → 은 → 동 순이고, 이름에 마우스를 올리면 어느 주차에서 받았는지 보입니다.</p>`;
+  return html;
+}
 function renderBoard() {
   const root = $('#tab-board');
   if (!data) return;
@@ -600,15 +663,7 @@ function renderBoard() {
     html += `<div class="summary">내 진행: ${parts.join(' · ')}${local.branch ? ` · <span class="muted">로컬 브랜치 <code>${esc(local.branch)}</code></span>` : ''}</div>`;
   }
 
-  const rows = data.people.map(person => {
-    const cells = w.problems.map(p => ({ p, main: p.files.find(f => f.person === person) || null, local: person === cfg.name ? local.files.get(`${w.dir}/${p.dir}`) || null : null }));
-    const count = cells.filter(c => c.main).length, merged = cells.filter(c => c.main && c.main.merged).length, localCount = cells.filter(c => !c.main && c.local).length;
-    const total = weeks.reduce((s, x) => s + x.problems.filter(p => p.files.some(f => f.person === person)).length, 0);
-    // doneAt: 이번 주 올린 파일들이 PR 에 올라간 시각 중 가장 늦은 것 (PR 안 올라간 파일이 하나라도 있으면 '' = 아직 다 안 올림)
-    const ats = cells.filter(c => c.main).map(c => c.main.at || '');
-    const doneAt = ats.length && ats.every(Boolean) ? ats.reduce((m, a) => a > m ? a : m) : '';
-    return { person, cells, count, merged, unmerged: count - merged, localCount, total, doneAt };
-  });
+  const rows = weekRows(w);
   const medal = medalRank(rows);
   // 정렬: 선택 기준 → 동점이면 푼 수 → PR 먼저 올린 순 → 전체 주차 → 이름
   const { key: sk, dir: sd } = state.sort, sgn = sd === 'asc' ? 1 : -1;
@@ -632,6 +687,7 @@ function renderBoard() {
   html += `</tbody><tfoot><tr><th class="name">푼 인원</th>${w.problems.map(p => `<td>${p.files.length}</td>`).join('')}<td>${total}</td><td>${grand}</td></tr></tfoot></table></div>`;
   html += `<div class="legend">${w.problems.map(p => `<button class="link" data-prob="${p.num}">${pad2(p.num)} ${esc(p.name)}</button>`).join('')}</div>`;
   html += `<p class="muted small" style="margin-top:12px">이름 클릭 → 그 사람 풀이 전체 · 문제 번호 클릭 → 그 문제의 모든 풀이 비교 · 배지 클릭 → 해당 파일과 피드백. <b>실선</b> = main에 머지됨, <b>점선 + 연회색 배경</b> = 푸시는 됐지만 PR 머지 전, <b>회색 캡슐</b>(내 행만) = 내 로컬에만 있음(아직 푸시 안 됨), <b>＋</b> = 내가 아직 안 푼 문제 (클릭하면 그 문제가 선택된 채로 파일 만들기로 이동). 합계 괄호는 머지 전 개수. <b>🥇🥈🥉</b> = 이번 주 푼 수 1~3위 (동률이면 PR을 먼저 올린 순, PR에 안 올린 풀이가 있으면 뒤로).</p>`;
+  html += medalTableHtml();
   root.innerHTML = html;
 }
 
@@ -744,7 +800,7 @@ function renderCreate() {
   $('#createWeeks').innerHTML = data.weeks.map(w => {
     const st = w.problems.map(p => probStatus(w, p).cls), done = st.filter(s => s === 'done' || s === 'pushed').length, loc = st.filter(s => s === 'local').length;
     const n = w.problems.length, pct = k => n ? `${(k / n * 100).toFixed(1)}%` : '0%';   // 게이지 채우기 비율 (0문제 주차는 0%)
-    return `<button class="chip gauge${w.num === state.cWeek ? ' active' : ''}${n && done === n ? ' full' : ''}" data-cweek="${w.num}" style="--p1:${pct(done)};--p2:${pct(done + loc)}" title="올라감 ${done} · 로컬 ${loc} · 남음 ${n - done - loc} / ${n}">Week ${w.num}<small>${esc(w.topic)} · ${done}${loc ? `+${loc}` : ''}/${n}</small></button>`;
+    return `<button class="chip gauge${w.num === state.cWeek ? ' sel' : ''}${n && done === n ? ' full' : ''}" data-cweek="${w.num}" style="--p1:${pct(done)};--p2:${pct(done + loc)}" title="올라감 ${done} · 로컬 ${loc} · 남음 ${n - done - loc} / ${n}">Week ${w.num}<small>${esc(w.topic)} · ${done}${loc ? `+${loc}` : ''}/${n}</small></button>`;
   }).join('');
   renderProbGrid();
 }
@@ -791,7 +847,7 @@ async function updateProbInfo() {
   if (curProb() !== p) return;
   const src = formSource(w, p);
   const srcHtml = src ? `📄 불러옴: <b>${esc(src.label)}</b> <button class="link" data-reload="1">다시 불러오기</button>` : '<span class="muted">📄 내 파일 없음 → 새로 작성</span>';
-  info.innerHTML = `생성 위치: <code>${esc(targetPath())}</code><br>문제: <b>${esc(r.title)}</b>${r.level ? ' · ' + esc(r.level) : ''}${r.link ? ` · <a href="${esc(r.link)}" target="_blank" rel="noopener">프로그래머스에서 풀기 ↗</a>` : ''} · <button class="link" data-prob-detail="${p.num}">다른 사람 풀이 보기 (${p.files.length})</button><br>${srcHtml}`;
+  info.innerHTML = `생성 위치: <code>${esc(targetPath())}</code><br>문제: <b>${esc(r.title)}</b>${r.level ? ' · ' + esc(r.level) : ''} · <button class="link" data-prob-detail="${p.num}">다른 사람 풀이 보기 (${p.files.length})</button>${r.link ? `<br><a class="btn primary solve" href="${esc(r.link)}" target="_blank" rel="noopener">🚀 프로그래머스에서 풀기 ↗</a>` : ''}<br>${srcHtml}`;
   updatePreview();
 }
 // 언어별 블록 주석 마커. null 이면 블록 주석이 없어 줄 주석만 사용
@@ -1010,8 +1066,9 @@ function bindEvents() {
   $$('.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
   $('#btnRefresh').addEventListener('click', () => loadAll(true));
   $('#tab-board').addEventListener('click', e => {
-    const t = e.target.closest('[data-sort],[data-goto],[data-week],[data-person],[data-prob],[data-file]'); if (!t) return;
+    const t = e.target.closest('[data-sort],[data-msort],[data-goto],[data-week],[data-person],[data-prob],[data-file]'); if (!t) return;
     if (t.dataset.sort) setSort(t.dataset.sort);
+    else if (t.dataset.msort) setMedalSort(t.dataset.msort);
     else if (t.dataset.goto) { const [wn, pn] = t.dataset.goto.split(':').map(Number); if ((wn !== state.cWeek || pn !== state.cProb) && confirmDiscard()) { state.cWeek = wn; state.cProb = pn; } showTab('create'); setTimeout(() => $('.pcard.sel')?.scrollIntoView({ block:'center', behavior:'smooth' }), 0); }
     else if (t.dataset.week) { state.week = +t.dataset.week; renderBoard(); }
     else if (t.dataset.person) openPerson(t.dataset.person);
