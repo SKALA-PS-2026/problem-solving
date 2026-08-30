@@ -97,7 +97,52 @@ while (getline(ss, token, ' ')) { /* ... */ }
 
 <br>
 
-### 2. 반복문과 재귀 (for / while / 재귀)
+### 2. 문자와 아스키코드
+ 
+문자열의 각 문자(index로 접근한 하나하나)는 **char 형태**이고, 내부적으로는 **아스키코드(ASCII)라는 정수값**을 가지고 있습니다. 즉 문자는 "숫자처럼 다룰 수 있는" 존재입니다.
+ 
+주요 범위만 알아도 충분합니다.
+ 
+| 문자 | 아스키코드 범위 |
+|---|:---:|
+| `'A'` ~ `'Z'` | 65 ~ 90 |
+| `'a'` ~ `'z'` | 97 ~ 122 |
+| `'0'` ~ `'9'` | 48 ~ 57 |
+ 
+**문자 ↔ 숫자 변환**
+ 
+```python
+ord('A')     # 문자 → 아스키코드: 65
+chr(65)      # 아스키코드 → 문자: 'A'
+ 
+# 활용 예: 알파벳을 한 칸씩 밀기 (시저 암호의 핵심 원리)
+ch = 'a'
+shifted = chr(ord(ch) + 1)   # 'b'
+ 
+# 활용 예: 대문자를 소문자로 (대소문자는 아스키코드 값 차이가 정확히 32)
+upper_ch = 'A'
+lower_ch = chr(ord(upper_ch) + 32)   # 'a'
+# 참고로 Python은 upper_ch.lower() 내장 함수로 더 간단히 가능
+```
+ 
+```java
+// Java
+int code = (int) 'A';        // 문자 → 아스키코드: 65
+char ch = (char) 65;          // 아스키코드 → 문자: 'A'
+```
+ 
+```cpp
+// C++
+int code = (int)'A';          // 문자 → 아스키코드: 65
+char ch = (char)65;           // 아스키코드 → 문자: 'A'
+// C++는 char 자체가 이미 정수처럼 연산 가능: 'A' + 1 == 'B'
+```
+ 
+**언제 쓰이나**: 문자를 정해진 칸수만큼 밀거나(시저 암호), 대소문자를 서로 바꾸거나(이상한 문자 만들기), 문자가 알파벳인지 숫자인지 범위로 판별할 때 등, 문자열 문제에서 실질적으로 자주 쓰이는 개념입니다.
+ 
+<br>
+
+### 3. 반복문과 재귀 (for / while / 재귀)
  
 같은 문제를 세 가지 방식으로 풀어보면서 각각의 차이를 비교합니다.
  
@@ -155,7 +200,6 @@ def factorial_recursive(n):
 | Lv.1 | 숫자 문자열과 영단어 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/81301) |
 | Lv.1 | 문자열 나누기 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/140108) |
 | Lv.2 | 문자열 압축 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/60057) |
-| Lv.2 | 괄호 변환 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/60058) |
 
 ## 💡 풀이 올릴 때
 
