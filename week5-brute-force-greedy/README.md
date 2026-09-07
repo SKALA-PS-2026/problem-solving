@@ -133,10 +133,18 @@ def min_coins(amount, coins):
 | 1 | Lv.1 | 최소직사각형 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/86491) | 완전탐색(브루트포스) |
 | 2 | Lv.1 | 모의고사 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42840) | 완전탐색(브루트포스) |
 | 3 | Lv.1 | 체육복 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42862) | 그리디 |
-| 4 | Lv.2 | 카펫 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42842) | 완전탐색(약수 조합 탐색) |
-| 5 | Lv.2 | 피로도 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/87946) | 완전탐색(순열 활용) |
-| 6 | Lv.2 | 구명보트 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42885) | 그리디(정렬 + 투 포인터 결합) |
-| 7 | Lv.3 | N-Queen | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12952) | **심화**: 백트래킹, 다소 어려울 수 있어 여유 있을 때 도전 |
+| 4 | Lv.1 | 예산 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12982) | 그리디(정렬 후 누적) |
+| 5 | Lv.2 | 카펫 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42842) | 완전탐색(약수 조합 탐색) |
+| 6 | Lv.2 | 피로도 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/87946) | 완전탐색(순열 활용) |
+| 7 | Lv.2 | 구명보트 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42885) | 그리디(정렬 + 투 포인터 결합) |
+| 8 | Lv.3 | N-Queen | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12952) | **심화**: 백트래킹, 다소 어려울 수 있어 여유 있을 때 도전 |
+
+> 1~2번은 개념 1(브루트포스)과 바로 연결됩니다. 제한사항(N의 크기)이 작아서 그냥 다 확인해도 충분한 문제들입니다.
+> 3~4번은 개념 4(그리디)와 연결됩니다. 3번(체육복)은 "빌려줄 학생을 어떤 순서로 처리할 것인가", 4번(예산)은 "예산 안에서 최대한 많은 부서를 지원하려면 어떤 순서로 지원해야 하는가"를 정하는 게 핵심입니다. 둘 다 정렬 후 순서대로 처리하는 그리디의 기본 패턴입니다.
+> 5번(카펫)은 브루트포스의 응용으로, 약수 관계를 이용해 가능한 조합을 탐색합니다.
+> 6번(피로도)은 개념 2(순열)를 실전에 적용하는 문제입니다. 던전을 방문하는 모든 순서(순열)를 다 만들어보고, 그중 가장 많은 던전을 돌 수 있는 경우를 찾습니다.
+> 7번(구명보트)은 그리디 응용으로, "가장 무거운 사람과 가장 가벼운 사람을 짝짓는" 선택이 왜 전체 최적으로 이어지는지 생각해보는 문제입니다. 3~4번보다 한 단계 더 응용된 그리디 사고를 요구합니다.
+> 8번(N-Queen)은 백트래킹(개념 3)의 가장 대표적인 문제입니다. 브루트포스로 모든 경우를 다 확인하면 시간이 오래 걸리는데, "이미 두 퀸이 서로 공격 가능하면 그 즉시 포기하는" 가지치기가 왜 필요한지 직접 체감할 수 있는 문제입니다.
 
 <br>
 
@@ -152,5 +160,17 @@ week5-brute-force-greedy/
 ├── problem01-최소직사각형/
 │   └── 이름.py
 ├── problem02-모의고사/
+│   └── 이름.py
+├── problem03-체육복/
+│   └── 이름.py
+├── problem04-예산/
+│   └── 이름.py
+├── problem05-카펫/
+│   └── 이름.py
+├── problem06-피로도/
+│   └── 이름.py
+├── problem07-구명보트/
+│   └── 이름.py
+├── problem08-N-Queen/
 │   └── 이름.py
 ```
