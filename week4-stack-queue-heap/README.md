@@ -220,11 +220,10 @@ priority_queue<int, vector<int>, greater<int>> minHeap;
 | 2 | Lv.2 | 기능개발 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42586) | 스택 |
 | 3 | Lv.2 | 다리를 지나는 트럭 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42583) | 큐 |
 | 4 | Lv.2 | 주식가격 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42584) | 스택(또는 브루트포스와 비교) |
-| 5 | Lv.2 | 쇠막대기 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42585) | 스택 (KOI 기출, 스택의 정석 문제) |
-| 6 | Lv.2 | 괄호 회전하기 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/76502) | 스택 응용 (올바른 괄호의 심화 버전, Kit 외 카카오 월간 챌린지 문제) |
-| 7 | Lv.2 | 더 맵게 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42626) | 힙(우선순위 큐) 기본 |
-| 8 | Lv.3 | 이중우선순위큐 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42628) | **심화**: 힙 응용, 다소 어려울 수 있어 여유 있을 때 도전 |
-| 9 | Lv.3 | 디스크 컨트롤러 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42627) | **심화**: 힙 + 정렬 결합, 이번 주에서 가장 난이도가 높음 |
+| 5 | Lv.2 | 괄호 회전하기 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/76502) | 스택 응용 (올바른 괄호의 심화 버전, Kit 외 카카오 월간 챌린지 문제) |
+| 6 | Lv.2 | 더 맵게 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42626) | 힙(우선순위 큐) 기본 |
+| 7 | Lv.3 | 이중우선순위큐 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42628) | **심화**: 힙 응용, 다소 어려울 수 있어 여유 있을 때 도전 |
+| 8 | Lv.3 | 디스크 컨트롤러 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42627) | **심화**: 힙 + 정렬 결합, 이번 주에서 가장 난이도가 높음 |
 
 <br>
 
