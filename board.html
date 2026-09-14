@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SKALA PS 현황판</title>
+<style>
+  :root {
+    --bg:#f6f8fa; --card:#ffffff; --text:#1f2328; --muted:#636c76; --line:#d0d7de;
+    --accent:#0969da; --accent-bg:#ddf4ff; --ok:#1a7f37; --ok-bg:#dafbe1;
+    --warn:#9a6700; --warn-bg:#fff8c5; --err:#cf222e; --err-bg:#ffebe9;
+    --code:#f6f8fa; --me:#fff8c5; --hover:#f3f4f6; --local-bg:#eceff2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#0d1117; --card:#161b22; --text:#e6edf3; --muted:#8b949e; --line:#30363d;
+      --accent:#58a6ff; --accent-bg:#122d4d; --ok:#3fb950; --ok-bg:#12321f;
+      --warn:#d29922; --warn-bg:#3a2e0a; --err:#f85149; --err-bg:#3d1418;
+      --code:#0d1117; --me:#2b2a14; --hover:#1f242c; --local-bg:#262c34;
+    }
+  }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",Roboto,sans-serif; }
+  a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
+  code, pre { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"D2Coding",monospace; }
+  code { background:var(--code); border:1px solid var(--line); border-radius:4px; padding:0 4px; font-size:12.5px; }
+  pre { background:var(--code); border:1px solid var(--line); border-radius:6px; padding:12px; overflow:auto; margin:0; font-size:12.5px; line-height:1.45; tab-size:4; }
+  .wrap { max-width:1150px; margin:0 auto; padding:0 16px; }
+  header { background:var(--card); border-bottom:1px solid var(--line); }
+  header .wrap { display:flex; align-items:center; gap:12px; height:52px; }
+  header h1 { font-size:17px; margin:0; }
+  .spacer { flex:1; }
+  .muted { color:var(--muted); } .small { font-size:12px; }
+  .tabs { display:flex; gap:4px; margin:14px auto 12px; border-bottom:1px solid var(--line); }
+  .tabs button { background:none; border:none; border-bottom:2px solid transparent; padding:8px 12px; font:inherit; color:var(--muted); cursor:pointer; }
+  .tabs button.active { color:var(--text); border-bottom-color:var(--accent); font-weight:600; }
+  main { padding-bottom:60px; }
+  .btn { background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:6px 12px; font:inherit; cursor:pointer; }
+  .btn:hover { background:var(--hover); }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; } .btn.primary:hover { opacity:.9; }
+  .btn.small { padding:3px 8px; font-size:12px; }
+  a.btn { display:inline-block; text-decoration:none; } a.btn:hover { text-decoration:none; }
+  .btn.solve { font-weight:700; font-size:14px; padding:8px 16px; margin:6px 0 2px; box-shadow:0 2px 8px rgba(9,105,218,.35); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  button.link { background:none; border:none; color:var(--accent); font:inherit; cursor:pointer; padding:0; }
+  button.link:hover { text-decoration:underline; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin-bottom:14px; }
+  .card h3 { margin:0 0 10px; font-size:15px; }
+  .box { border-radius:6px; padding:8px 12px; margin:8px 0; }
+  .box.ok { background:var(--ok-bg); color:var(--ok); } .box.warn { background:var(--warn-bg); color:var(--warn); } .box.err { background:var(--err-bg); color:var(--err); }
+  #banner { margin-bottom:12px; }
+  .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:8px 0; }
+  label.field { display:block; margin:8px 0; }
+  label.field > span { display:block; font-size:12px; color:var(--muted); margin-bottom:3px; }
+  input[type=text], input[type=password], select, textarea { font:inherit; color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:6px 8px; width:100%; max-width:520px; }
+  textarea { max-width:none; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"D2Coding",monospace; font-size:12.5px; tab-size:4; }
+  textarea.plain { font-family:inherit; font-size:inherit; max-width:640px; resize:vertical; }
+  select { width:auto; min-width:160px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .chip { position:relative; isolation:isolate; overflow:hidden; background:var(--card); border:1px solid var(--line); border-radius:20px; padding:4px 12px; font:inherit; cursor:pointer; color:var(--text); }
+  /* 주차 진행률 게이지: --p1 = 올라감(머지+푸시) 비율, --p2 = 올라감+로컬 비율. 캡슐 왼쪽부터 채워짐 */
+  .chip.gauge { --p1:0%; --p2:0%; --g-done:var(--ok-bg); --g-loc:var(--warn-bg); }
+  @supports (color: color-mix(in srgb, red 50%, transparent)) { .chip.gauge { --g-done:color-mix(in srgb, var(--ok) 24%, transparent); --g-loc:color-mix(in srgb, var(--warn) 26%, transparent); } }
+  .chip.gauge::before { content:''; position:absolute; inset:0; z-index:-1; pointer-events:none; background:linear-gradient(90deg, var(--g-done) 0 var(--p1), var(--g-loc) var(--p1) var(--p2), transparent var(--p2)); }
+  .chip.full { border-color:var(--ok); } .chip.full small { color:var(--ok); }
+  .chip.active { background:var(--accent-bg); border-color:var(--accent); color:var(--accent); font-weight:600; }
+  .chip.sel { border-color:var(--err) !important; box-shadow:0 0 0 2px var(--err); }   /* 파일 만들기 탭에서 선택된 주차: 배경색 없이 빨간 외곽선만 */
+  .chip small { color:var(--muted); margin-left:4px; }
+  .sortbar { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:0 0 8px; }
+  .sortbar .chip { padding:2px 10px; font-size:12px; }
+  .sorth { background:none; border:none; font:inherit; font-weight:600; color:inherit; cursor:pointer; padding:0; white-space:nowrap; }
+  .sorth:hover { color:var(--accent); }
+  .tablewrap { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:8px; }
+  table.board { border-collapse:collapse; width:100%; min-width:600px; }
+  table.board th, table.board td { border-bottom:1px solid var(--line); padding:5px 6px; text-align:center; white-space:nowrap; }
+  table.board thead th { background:var(--bg); font-weight:600; position:sticky; top:0; }
+  table.board th.name, table.board td.name { text-align:left; position:sticky; left:0; background:var(--card); z-index:1; min-width:110px; }
+  table.board thead th.name { background:var(--bg); z-index:2; }
+  table.board tr.me td, table.board tr.me th.name { background:var(--me); }
+  table.board tbody tr:hover td:not(.name) { background:var(--hover); }
+  table.board td.empty { color:var(--line); }
+  table.board td.sum { font-weight:600; }
+  table.board tfoot td, table.board tfoot th { color:var(--muted); font-size:12px; background:var(--bg); }
+  /* 메달 순위표: 순위 열이 맨 앞이라 이름 열을 고정하지 않음 */
+  table.board.medals { min-width:600px; }
+  table.board.medals th.name, table.board.medals thead th.name { position:static; }
+  table.board.medals td.rank { color:var(--muted); font-weight:600; width:48px; }
+  table.board.medals td.zero { color:var(--muted); font-weight:400; }
+  table.board.medals td.pts { font-weight:700; }
+  .medals-h { margin:22px 0 8px; font-size:15px; }
+  .hdr { background:none; border:none; font:inherit; font-weight:600; color:var(--accent); cursor:pointer; padding:0; }
+  .hdr:hover { text-decoration:underline; }
+  /* [data-tip] 요소에 마우스를 올리면 뜨는 팝업 — 표의 overflow 에 안 잘리게 body 에 fixed 로 띄움. --ax = 화살표 x 위치 */
+  .tip { --ax:50%; position:fixed; z-index:40; background:var(--text); color:var(--bg); padding:5px 10px; border-radius:6px; font-size:12.5px; font-weight:600; white-space:nowrap; pointer-events:none; box-shadow:0 4px 14px rgba(0,0,0,.25); }
+  .tip::before { content:''; position:absolute; top:-5px; left:var(--ax); margin-left:-5px; border:5px solid transparent; border-top:0; border-bottom-color:var(--text); }
+  .badge { display:inline-block; min-width:36px; padding:1px 6px; border-radius:10px; font-size:11.5px; font-weight:600; border:1px solid var(--c,#999); color:var(--c,#999); background:transparent; cursor:pointer; font-family:inherit; }
+  .badge:hover { background:var(--c,#999); color:#fff; }
+  .badge.branch { border-style:dotted; background:var(--local-bg); }
+  .badge.local { --c:var(--muted); background:var(--local-bg); border-color:var(--line); color:var(--muted); }
+  .badge.local:hover { background:var(--line); color:var(--text); }
+  .badge.todo { --c:var(--muted); border:1px dashed var(--line); color:var(--muted); background:transparent; min-width:36px; }
+  .badge.todo:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-bg); }
+  .medal { display:inline-block; margin-right:4px; font-size:15px; line-height:1; vertical-align:-1px; cursor:help; }
+  .pgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:8px; }
+  .pcard { position:relative; text-align:left; border:2px solid var(--line); border-radius:8px; padding:8px 10px; background:var(--card); cursor:pointer; font:inherit; color:var(--text); display:flex; flex-direction:column; gap:2px; min-height:62px; }
+  .pcard:hover { filter:brightness(.96); }
+  .pcard .pn { font-weight:700; font-size:13px; }
+  .pcard .pname { font-size:12.5px; line-height:1.3; word-break:keep-all; }
+  .pcard .pst { font-size:11px; color:var(--muted); }
+  .pcard.done { background:var(--ok-bg); border-color:var(--ok); } .pcard.done .pst { color:var(--ok); }
+  .pcard.pushed { background:var(--accent-bg); border-color:var(--accent); } .pcard.pushed .pst { color:var(--accent); }
+  .pcard.local { background:var(--warn-bg); border-color:var(--warn); } .pcard.local .pst { color:var(--warn); }
+  .pcard.sel { border-color:var(--err) !important; box-shadow:0 0 0 2px var(--err); }
+  .pcard.sel::after { content:'✔ 선택'; position:absolute; top:6px; right:8px; font-size:11px; font-weight:700; color:var(--err); }
+  .plegend { display:flex; flex-wrap:wrap; gap:4px 14px; margin-top:8px; align-items:center; }
+  .pk { display:inline-block; width:12px; height:12px; border-radius:3px; border:2px solid var(--line); vertical-align:-2px; margin-right:3px; background:var(--card); }
+  .pk.done { background:var(--ok-bg); border-color:var(--ok); } .pk.pushed { background:var(--accent-bg); border-color:var(--accent); } .pk.local { background:var(--warn-bg); border-color:var(--warn); }
+  .summary { margin-bottom:10px; font-size:13px; }
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50; display:flex; justify-content:flex-end; }
+  .panel { background:var(--bg); width:min(900px,100%); height:100%; overflow:auto; box-shadow:-4px 0 20px rgba(0,0,0,.25); }
+  .panel-head { position:sticky; top:0; background:var(--card); border-bottom:1px solid var(--line); padding:12px 18px; display:flex; align-items:center; gap:10px; z-index:2; }
+  .panel-head h2 { margin:0; font-size:16px; } .panel-body { padding:14px 18px; }
+  .panel-body h3 { font-size:14px; margin:18px 0 8px; }
+  .fcard { background:var(--card); border:1px solid var(--line); border-radius:8px; margin-bottom:12px; }
+  .fcard-head { display:flex; align-items:center; gap:8px; padding:10px 12px; flex-wrap:wrap; }
+  .dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .fcard .code { padding:0 12px 10px; }
+  .fb { border-top:1px solid var(--line); padding:10px 12px; }
+  .fb-head { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-weight:600; margin-bottom:6px; } .fb-head .count { background:var(--accent-bg); color:var(--accent); border-radius:10px; padding:0 7px; font-size:12px; }
+  .fb-item { border-left:3px solid var(--line); padding:4px 10px; margin:6px 0; }
+  .fb-item .fb-body { white-space:pre-wrap; word-break:break-word; margin-top:2px; }
+  .tag { font-size:11px; border-radius:4px; padding:0 5px; background:var(--accent-bg); color:var(--accent); }
+  .tag.pr { background:var(--ok-bg); color:var(--ok); } .tag.local { background:var(--warn-bg); color:var(--warn); } .tag.branch { background:var(--bg); color:var(--muted); border:1px dotted var(--line); }
+  .fb-form textarea { width:100%; min-height:64px; margin:6px 0; }
+  /* 따봉: 풀이 카드 피드백 머리글 오른쪽. .on = 내가 누른 상태, .own = 내 코드(못 누름, 개수만) */
+  .like-btn.on { background:var(--accent-bg); border-color:var(--accent); color:var(--accent); font-weight:700; }
+  .like.own { color:var(--muted); font-size:12px; cursor:help; }
+  .like-who { font-weight:400; }
+  /* 내 피드백의 수정/삭제 버튼과 수정 폼 */
+  .fb-meta { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .fb-act { margin-left:auto; display:flex; gap:8px; } .fb-act button { font-size:12px; color:var(--muted); } .fb-act button:hover { color:var(--accent); }
+  .fb-item.editing textarea { width:100%; min-height:64px; margin:4px 0; }
+  #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#1f2328; color:#fff; padding:8px 16px; border-radius:6px; z-index:99; box-shadow:0 4px 14px rgba(0,0,0,.3); }
+  .kbd { font-size:11px; border:1px solid var(--line); border-radius:3px; padding:0 4px; }
+  .next p { margin:6px 0; }
+  .overlay.center { justify-content:center; align-items:center; padding:16px; z-index:60; }
+  .modal { background:var(--bg); border:1px solid var(--line); border-radius:10px; width:min(620px,100%); max-height:92vh; overflow:auto; box-shadow:0 10px 40px rgba(0,0,0,.35); padding:18px 20px; }
+  .modal h2 { margin:0 0 4px; font-size:17px; }
+  .modal .card { margin-bottom:10px; }
+  .modal input[type=text], .modal input[type=password], .modal select { max-width:none; }
+  /* 개인 문제(personal/) 탭 */
+  .psgrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:10px; }
+  .pscard { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; cursor:pointer; display:flex; flex-direction:column; gap:4px; }
+  .pscard:hover { border-color:var(--accent); background:var(--hover); }
+  .pscard .ps-head { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .pscard .ps-title { font-size:13.5px; word-break:keep-all; }
+  .pscard .ps-sub { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"D2Coding",monospace; font-size:11.5px; }
+  .pscard .ps-foot { display:flex; align-items:center; gap:8px; margin-top:2px; }
+  .ps-h { margin:20px 0 8px; font-size:15px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .pscard.done { background:var(--ok-bg); border-color:var(--ok); } .pscard.pushed { background:var(--accent-bg); border-color:var(--accent); }
+  .pscard.local { background:var(--warn-bg); border-color:var(--warn); }
+  .pscard .ps-people { display:flex; flex-wrap:wrap; gap:4px; }
+  .pscard .ps-st { font-size:11.5px; color:var(--muted); }
+  .pscard.done .ps-st { color:var(--ok); } .pscard.pushed .ps-st { color:var(--accent); } .pscard.local .ps-st { color:var(--warn); }
+  .pcard.new { border-style:dashed; align-items:center; justify-content:center; text-align:center; color:var(--accent); font-weight:700; }
+  .npbox { background:var(--accent-bg); border:1px solid var(--accent); border-radius:8px; padding:10px 12px; margin:0 0 10px; }
+  .npbox input[type=text] { background:var(--card); }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" media="(prefers-color-scheme: dark)">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>SKALA PS 현황판</h1>
+    <span class="muted small" id="repoLink"></span>
+    <span class="spacer"></span>
+    <span id="meName" class="small"></span>
+    <button id="btnRefresh" class="btn small">새로고침</button>
+    <span id="rate" class="muted small"></span>
+  </div>
+</header>
+
+<nav class="wrap tabs">
+  <button data-tab="board" class="active">현황</button>
+  <button data-tab="personal">개인 문제</button>
+  <button data-tab="create">내 파일 만들기</button>
+  <button data-tab="settings">설정</button>
+</nav>
+
+<main class="wrap">
+  <div id="banner" hidden></div>
+
+  <section id="tab-board"><p class="muted">불러오는 중…</p></section>
+
+  <section id="tab-personal" hidden><p class="muted">불러오는 중…</p></section>
+
+  <section id="tab-create" hidden>
+    <div id="createFolderNote" hidden></div>
+    <div class="card">
+      <h3>1. 문제 선택 <span id="createProgress" class="muted small"></span></h3>
+      <div class="chips" id="createWeeks"></div>
+      <div id="newPersonal" hidden>
+        <div class="npbox">
+          <div class="row" style="margin:0">
+            <label><b>프로그래머스 번호 또는 링크</b>&nbsp;<input type="text" id="npId" placeholder="60058   또는   https://school.programmers.co.kr/…/lessons/60058" style="width:min(430px,100%)" spellcheck="false" autocomplete="off"></label>
+            <label>문제 이름 <span class="muted small">(선택)</span>&nbsp;<input type="text" id="npName" placeholder="괄호 변환" style="width:170px" autocomplete="off"></label>
+            <button id="npAdd" class="btn primary">이 문제 풀기</button>
+          </div>
+          <div id="npInfo" class="small muted" style="margin-top:6px">번호나 링크를 넣으면 <code>personal/이름/<b>번호</b>.확장자</code> 로 파일을 만들고 문제 링크를 자동으로 걸어 줍니다. 남이 올린 문제는 아래에서 고르면 됩니다.</div>
+        </div>
+      </div>
+      <div class="pgrid" id="createProbs"></div>
+      <div class="plegend small muted"><span><span class="pk done"></span> main 머지됨</span><span><span class="pk pushed"></span> 푸시됨 (PR 머지 전)</span><span><span class="pk local"></span> 내 로컬에만 있음</span><span><span class="pk"></span> 아직 안 품</span></div>
+      <div id="probInfo" class="small" style="margin-top:10px"></div>
+    </div>
+    <div class="card">
+      <h3>2. 내용 작성 → 파일 생성</h3>
+      <div class="row namerow">
+        <label>파일 이름&nbsp;<input type="text" id="cName" placeholder="hong" style="width:150px" spellcheck="false"></label>
+        <label>형식&nbsp;<select id="cExt">
+          <option value="cpp">C++ (.cpp)</option><option value="py">Python (.py)</option><option value="java">Java (.java)</option>
+          <option value="js">JavaScript (.js)</option><option value="kt">Kotlin (.kt)</option><option value="c">C (.c)</option><option value="go">Go (.go)</option>
+        </select></label>
+        <span class="small">→ <code id="cTarget"></code></span>
+        <span class="muted small">(바꾸면 바로 저장되고 현황표에도 반영됩니다)</span>
+      </div>
+      <p class="small muted" style="margin:0 0 6px">문제를 고르면 그 문제의 내 파일을 자동으로 불러옵니다 (로컬 → GitHub 순, 없으면 빈칸). 붙여넣는 코드 맨 위에 <code>// 접근 방식: …</code> <code>// 시간복잡도: …</code> 헤더가 이미 있으면 아래 칸에 자동으로 옮겨집니다 (띄어쓰기 달라도 인식).</p>
+      <label class="field"><span>접근 방식 <span class="muted">(여러 줄 가능)</span></span><textarea id="inApproach" class="plain" rows="3" placeholder="예: 각 원소에 2를 곱해 새 배열 생성"></textarea></label>
+      <label class="field"><span>시간복잡도 <span class="muted">(여러 줄 가능)</span></span><textarea id="inComplexity" class="plain" rows="2" placeholder="예: O(n)"></textarea></label>
+      <label class="field"><span>코드 — 다른 곳에서 푼 코드를 여기 붙여넣기 <button id="btnPaste" class="btn small">클립보드에서 붙여넣기</button></span>
+        <textarea id="inCode" rows="14" spellcheck="false" placeholder="#include <string>&#10;#include <vector>&#10;using namespace std;&#10;&#10;vector<int> solution(vector<int> numbers) { ... }"></textarea></label>
+      <details><summary class="small muted">저장될 내용 미리보기</summary><pre id="preview"></pre></details>
+      <div class="row">
+        <button id="btnCreate" class="btn primary">파일 생성</button>
+        <button id="btnCopy" class="btn">내용 복사</button>
+        <label class="small"><input type="checkbox" id="chkOverwrite"> 이미 있으면 덮어쓰기</label>
+      </div>
+      <div id="createResult"></div>
+    </div>
+  </section>
+
+  <section id="tab-settings" hidden>
+    <div class="card">
+      <h3>저장소 폴더 연결 <span class="muted small">(clone 받은 problem-solving 폴더 · Chrome/Edge)</span></h3>
+      <div id="folderStatus"></div>
+    </div>
+    <div class="card">
+      <h3>내 정보 <span class="muted small">(이 브라우저에만 저장됩니다)</span></h3>
+      <label class="field"><span>파일 이름 (영문, 예: hong) → 문제 폴더에 <b id="cfgNamePreview"></b> 로 저장됩니다</span><input type="text" id="cfgName" placeholder="hong"></label>
+      <label class="field"><span>이름 (PR 제목 <code>[Week1] 이름</code> 용)</span><input type="text" id="cfgKr" placeholder="홍길동"></label>
+      <label class="field"><span>언어</span>
+        <select id="cfgExt">
+          <option value="cpp">C++ (.cpp)</option><option value="py">Python (.py)</option><option value="java">Java (.java)</option>
+          <option value="js">JavaScript (.js)</option><option value="kt">Kotlin (.kt)</option><option value="c">C (.c)</option><option value="go">Go (.go)</option>
+        </select></label>
+    </div>
+    <div class="card">
+      <h3>GitHub 개인 토큰 <span class="muted small">(선택 · 이 브라우저에만 저장 · api.github.com 에만 전송)</span></h3>
+      <p class="small muted" style="margin:0 0 8px">토큰이 없으면 <b>같은 네트워크(IP)를 쓰는 전원이 시간당 60회</b>를 나눠 씁니다 (새로고침 1번 ≈ 브랜치 수+3회). <b>본인 GitHub 계정</b>으로 만든 읽기 전용 토큰을 넣으면 <b>내 계정만 시간당 5,000회</b>가 됩니다. 방장 토큰을 받아 쓰는 게 아니라 각자 자기 계정으로 만드세요.</p>
+      <label class="field"><span>토큰 (<code>github_pat_…</code> 또는 <code>ghp_…</code>)</span><input type="password" id="cfgToken" placeholder="비워 두면 토큰 없이 사용" spellcheck="false" autocomplete="off"></label>
+      <div class="row" style="margin:0 0 8px"><button id="btnCheckToken" class="btn small">토큰 확인</button><span id="cfgTokenStatus" class="small muted"></span></div>
+      <details><summary class="small muted">토큰 만드는 법 (1분 · 읽기 전용이라 유출돼도 계정에 피해 없음)</summary>
+        <ol class="small" style="margin:6px 0 0; padding-left:20px; line-height:1.8">
+          <li>GitHub에 <b>본인 계정</b>으로 로그인한 뒤 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new ↗</a> 열기<br><span class="muted">(메뉴로 가려면: 우상단 프로필 → Settings → 왼쪽 맨 아래 Developer settings → Personal access tokens → Fine-grained tokens → Generate new token)</span></li>
+          <li><b>Token name</b>: 아무거나 (예: <code>psboard</code>) · <b>Expiration</b>: 스터디 기간보다 길게</li>
+          <li><b>Repository access</b>: <b>Public repositories (read-only)</b> 선택 — 아래 Permissions 는 건드리지 않아도 됩니다. 공개 저장소 읽기만 되는 토큰입니다.</li>
+          <li>맨 아래 <b>Generate token</b> → <code>github_pat_…</code> 를 복사 (화면을 벗어나면 다시 볼 수 없으니 바로 복사)</li>
+          <li>위 칸에 붙여넣고 <b>토큰 확인</b> → 아래 <b>저장</b></li>
+        </ol>
+      </details>
+    </div>
+    <p class="small muted">현황판은 GitHub를 읽기만 합니다 (토큰 없음: IP당 시간당 60회 · 토큰 있음: 계정당 시간당 5,000회 · 새로고침 1번에 브랜치 수+3회 사용 · 10분 캐시). 쓰기는 전부 내 로컬 폴더에만 하고, GitHub에 올리는 건 직접 커밋/푸시할 때뿐입니다.</p>
+    <div class="row">
+      <button id="btnSaveCfg" class="btn primary">저장</button>
+      <button id="btnClearCache" class="btn">데이터 캐시 지우기</button>
+      <span class="muted small">캐시는 10분간 유지되고, 상단 "새로고침"으로 즉시 갱신됩니다.</span>
+    </div>
+  </section>
+</main>
+
+<div id="detail" class="overlay" hidden>
+  <div class="panel">
+    <div class="panel-head">
+      <div><h2 id="detailTitle"></h2><div id="detailSub" class="small muted"></div></div>
+      <span class="spacer"></span>
+      <button id="detailClose" class="btn small">닫기 <span class="kbd">Esc</span></button>
+    </div>
+    <div class="panel-body" id="detailBody"></div>
+  </div>
+</div>
+<div id="setup" class="overlay center" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+    <h2 id="setupTitle">처음 오셨군요! 시작 전에 설정이 필요합니다</h2>
+    <p class="muted small" style="margin:0 0 12px">한 번만 하면 이 브라우저에 기억됩니다. 나중에 <b>설정</b> 탭과 <b>내 파일 만들기</b> 탭에서 바꿀 수 있습니다.</p>
+    <div class="card">
+      <h3>1. 저장소 폴더 연결 <span class="muted small">(clone 받은 problem-solving 폴더 · Chrome/Edge)</span></h3>
+      <div id="setupFolder"></div>
+    </div>
+    <div class="card">
+      <h3>2. 내 정보</h3>
+      <label class="field"><span>파일 이름 (영문, 예: hong) → 문제 폴더에 <b id="setupNamePreview"></b> 로 저장됩니다</span><input type="text" id="setupName" placeholder="hong" spellcheck="false" autocomplete="off"></label>
+      <label class="field"><span>이름 (PR 제목 <code>[Week1] 이름</code> 용)</span><input type="text" id="setupKr" placeholder="홍길동" autocomplete="off"></label>
+      <label class="field"><span>언어</span>
+        <select id="setupExt">
+          <option value="cpp">C++ (.cpp)</option><option value="py">Python (.py)</option><option value="java">Java (.java)</option>
+          <option value="js">JavaScript (.js)</option><option value="kt">Kotlin (.kt)</option><option value="c">C (.c)</option><option value="go">Go (.go)</option>
+        </select></label>
+    </div>
+    <div class="card">
+      <h3>3. GitHub 개인 토큰 <span class="muted small">(선택 · 나중에 설정 탭에서도 넣을 수 있음)</span></h3>
+      <p class="small muted" style="margin:0 0 8px">교육장처럼 여럿이 같은 Wi-Fi를 쓰면 토큰 없이는 <b>시간당 60회를 다 같이 나눠 써서</b> 금방 막힙니다. <b>본인 GitHub 계정</b>으로 읽기 전용 토큰을 만들어 넣으면 내 계정만 시간당 5,000회가 됩니다. 이 브라우저에만 저장됩니다.</p>
+      <label class="field"><span>토큰 (<code>github_pat_…</code>)</span><input type="password" id="setupToken" placeholder="비워 두고 시작해도 됩니다" spellcheck="false" autocomplete="off"></label>
+      <div class="row" style="margin:0 0 8px"><button id="setupCheckToken" class="btn small">토큰 확인</button><span id="setupTokenStatus" class="small muted"></span></div>
+      <details><summary class="small muted">토큰 만드는 법 (1분)</summary>
+        <ol class="small" style="margin:6px 0 0; padding-left:20px; line-height:1.8">
+          <li>GitHub에 <b>본인 계정</b>으로 로그인 후 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new ↗</a> 열기</li>
+          <li><b>Token name</b>: 아무거나 (예: <code>psboard</code>) · <b>Expiration</b>: 넉넉히</li>
+          <li><b>Repository access</b>: <b>Public repositories (read-only)</b> 선택 (Permissions 는 그대로)</li>
+          <li><b>Generate token</b> → <code>github_pat_…</code> 복사해서 위 칸에 붙여넣고 <b>토큰 확인</b></li>
+        </ol>
+      </details>
+    </div>
+    <div class="row">
+      <button id="setupStart" class="btn primary" disabled>시작하기</button>
+      <span id="setupHint" class="muted small"></span>
+    </div>
+  </div>
+</div>
+<div id="toast" hidden></div>
+
+<script>
+(() => {
+'use strict';
+
+// ---------- 상수 ----------
+const OWNER = 'SKALA-PS-2026', REPO = 'problem-solving', BRANCH = 'main';
+const API = 'https://api.github.com';
+const RAWB = `https://raw.githubusercontent.com/${OWNER}/${REPO}/`;
+const WEB = `https://github.com/${OWNER}/${REPO}`;
+const FEEDBACK_DIR = 'feedback';
+const PERSONAL_DIR = 'personal';
+const PERSONAL_WEEK = 'personal';   // state.cWeek 이 이 값이면 '개인 문제' 주차
+const CACHE_TTL = 10 * 60 * 1000;
+const CFG_KEY = 'psboard.cfg', CACHE_KEY = 'psboard.cache3', SORT_KEY = 'psboard.sort', MSORT_KEY = 'psboard.msort', PRFILES_KEY = 'psboard.prfiles';
+// 현황표 정렬 기준 (dir = 처음 눌렀을 때 방향)
+const SORTS = { count:{ label:'푼 수', dir:'desc', title:'이번 주에 올린 문제 수 (머지 전 포함)' }, merged:{ label:'머지됨', dir:'desc', title:'이번 주 main에 머지된 문제 수' }, total:{ label:'전체 주차', dir:'desc', title:'모든 주차 합계' }, pcount:{ label:'개인', dir:'desc', title:'personal 폴더의 개인 문제 수' }, name:{ label:'이름', dir:'asc', title:'이름 가나다/알파벳순' } };
+// 메달 순위표 정렬 기준 (모든 주차의 🥇🥈🥉 합산) · 승점 = 금 3 · 은 2 · 동 1
+const MEDAL_SORTS = { points:{ label:'승점', dir:'desc', title:'승점 = 🥇3 + 🥈2 + 🥉1 + 푼 문제×2 + 개인 문제×1 + 👍×1' }, gold:{ label:'🥇 금', dir:'desc', title:'금메달 수 (주차 1위) · 1개 3점' }, silver:{ label:'🥈 은', dir:'desc', title:'은메달 수 (주차 2위) · 1개 2점' }, bronze:{ label:'🥉 동', dir:'desc', title:'동메달 수 (주차 3위) · 1개 1점' }, solved:{ label:'푼 문제', dir:'desc', title:'모든 주차에서 푼 문제 수 (머지 전 포함) · 1문제 2점' }, personal:{ label:'개인', dir:'desc', title:'personal 폴더에 올린 개인 문제 수 (푸시된 것만) · 1문제 1점' }, likes:{ label:'👍', dir:'desc', title:'내 풀이가 받은 따봉 수 (본인 것 제외) · 1개 1점' }, name:{ label:'이름', dir:'asc', title:'이름 가나다/알파벳순' } };
+const MEDAL_POINTS = { gold:3, silver:2, bronze:1, solved:2, personal:1, likes:1 };
+const EXT_COLOR = { py:'#3572A5', cpp:'#f34b7d', c:'#555555', java:'#b07219', js:'#e3c14a', ts:'#3178c6', kt:'#A97BFF', go:'#00ADD8', rs:'#dea584', cs:'#178600', swift:'#F05138' };
+const COMMENT_PREFIX = { py:'#', rb:'#', sh:'#' };
+
+// ---------- 유틸 ----------
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+const nfc = s => (s || '').normalize('NFC');
+const pad2 = n => String(n).padStart(2, '0');
+const colorOf = ext => EXT_COLOR[(ext || '').toLowerCase()] || '#8b949e';
+const webUrl = (branch, p) => `${WEB}/blob/${encodeURIComponent(branch)}/${encodeURI(p)}`;
+const rawUrl = (ref, p) => `${RAWB}${ref}/${encodeURI(p)}`;
+const fmtDate = iso => { const d = new Date(iso); return isNaN(d) ? '' : `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+const safeJson = s => { try { return s ? JSON.parse(s) : null; } catch { return null; } };
+let toastTimer = 0;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 3000); }
+function showBanner(msg, kind = 'warn') { const b = $('#banner'); b.className = `box ${kind}`; b.innerHTML = msg; b.hidden = false; }
+function hideBanner() { $('#banner').hidden = true; }
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); toast('복사됨'); return; } catch {}
+  const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('복사됨'); } catch { toast('복사 실패 — 직접 선택해서 복사하세요'); }
+  ta.remove();
+}
+
+// ---------- 설정 ----------
+const cfg = Object.assign({ name:'', krName:'', ext:'cpp', token:'' }, safeJson(localStorage.getItem(CFG_KEY)) || {});
+if (typeof cfg.token !== 'string') cfg.token = '';
+// token: 본인 GitHub 계정의 읽기 전용 개인 토큰(선택). 이 브라우저 localStorage 에만 저장되고 api.github.com 에만 전송된다.
+function saveCfg() { localStorage.setItem(CFG_KEY, JSON.stringify({ name: cfg.name, krName: cfg.krName, ext: cfg.ext, token: cfg.token })); }
+
+// ---------- 상태 ----------
+const state = { tab:'board', week:0, cWeek:0, cProb:0, pFilter:'all', rate:'', sort: (() => { const s = safeJson(localStorage.getItem(SORT_KEY)); return s && SORTS[s.key] ? { key: s.key, dir: s.dir === 'asc' ? 'asc' : 'desc' } : { key:'count', dir:'desc' }; })(), msort: (() => { const s = safeJson(localStorage.getItem(MSORT_KEY)); return s && MEDAL_SORTS[s.key] ? { key: s.key, dir: s.dir === 'asc' ? 'asc' : 'desc' } : { key:'points', dir:'desc' }; })() };
+let data = null, lastPayload = null;
+// feedback: 내 feedback/<이름>.json 내용, fbLoaded: 그 파일을 실제로 읽었는지 (읽었으면 내 피드백·따봉은 로컬 파일이 기준)
+const local = { handle:null, perm:'none', files:new Map(), personal:[], branch:'', feedback:[], fbLoaded:false };
+const codeCache = new Map();
+const readmeCache = new Map();
+const personalMetaCache = new Map();   // personal 파일 경로 → { title, link } (코드 맨 위 주석에서 읽음)
+
+// ---------- IndexedDB (폴더 핸들 보관) ----------
+const idb = {
+  db: null,
+  open() { return new Promise((res, rej) => { const r = indexedDB.open('psboard', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async get(k) { const db = this.db || (this.db = await this.open()); return new Promise((res, rej) => { const t = db.transaction('kv', 'readonly').objectStore('kv').get(k); t.onsuccess = () => res(t.result); t.onerror = () => rej(t.error); }); },
+  async set(k, v) { const db = this.db || (this.db = await this.open()); return new Promise((res, rej) => { const t = db.transaction('kv', 'readwrite').objectStore('kv').put(v, k); t.onsuccess = () => res(); t.onerror = () => rej(t.error); }); },
+};
+
+// ---------- GitHub API (읽기 전용) ----------
+// 개인 토큰이 있으면 인증 요청(계정당 시간당 5,000회), 없으면 비인증(IP당 시간당 60회)
+function ghHeaders(token = cfg.token) {
+  const h = { 'Accept': 'application/vnd.github+json' };
+  if (token) h['Authorization'] = 'Bearer ' + token;
+  return h;
+}
+async function gh(path) {
+  const res = await fetch(API + path, { headers: ghHeaders() });
+  const rem = res.headers.get('x-ratelimit-remaining'), lim = res.headers.get('x-ratelimit-limit');
+  if (rem !== null) { state.rate = `API 잔여 ${rem}/${lim}${cfg.token ? ' (토큰)' : ''}`; updateHeader(); }
+  if (!res.ok) {
+    let msg = ''; try { msg = (await res.json()).message || ''; } catch {}
+    if (res.status === 401 && cfg.token) msg = '개인 토큰이 잘못됐거나 만료됐습니다. 설정 탭에서 토큰을 다시 넣거나 지워 주세요.';
+    else if (res.status === 403 && rem === '0') { const reset = res.headers.get('x-ratelimit-reset'); msg = `GitHub API 요청 한도 초과(시간당 ${lim || 60}회).${reset ? ' ' + fmtDate(new Date(reset * 1000).toISOString()).slice(11) + ' 이후 다시 시도하세요.' : ''} 그때까지는 이전 캐시를 표시합니다.${cfg.token ? '' : ' 설정 탭에서 본인 계정의 개인 토큰을 넣으면 시간당 5,000회로 늘어납니다.'}`; }
+    throw new Error(`${res.status} ${msg}`);
+  }
+  return res.json();
+}
+// 토큰 검사 — /rate_limit 은 요청 한도에 포함되지 않는다
+async function checkToken(token) {
+  const res = await fetch(API + '/rate_limit', { headers: ghHeaders(token) });
+  if (res.status === 401) throw new Error('토큰이 유효하지 않습니다 (401). 복사가 잘못됐거나 만료됐을 수 있습니다.');
+  if (!res.ok) throw new Error(`확인 실패 (${res.status})`);
+  const j = await res.json(); const core = j.resources?.core || j.rate || {};
+  return { limit: core.limit, remaining: core.remaining };
+}
+async function ghAll(path) {
+  const out = []; const sep = path.includes('?') ? '&' : '?';
+  for (let page = 1; page <= 10; page++) {
+    const r = await gh(`${path}${sep}per_page=100&page=${page}`);
+    out.push(...r); if (r.length < 100) break;
+  }
+  return out;
+}
+
+// ---------- 데이터 ----------
+// items: [{path, sha, branch, ref}] — main 이 먼저 오고, 같은 경로는 먼저 온 것(main)을 우선
+// 주차/문제 목록은 main 트리 기준으로만 만든다. 다른 브랜치의 파일은 main 에 있는 문제 폴더에만 붙이고,
+// main 에 없는 폴더(옛 브랜치에 남은 삭제된 문제 등)는 무시한다.
+function parseTree(items) {
+  const weeks = new Map(), personal = new Map(), seen = new Set(), fbFiles = [];
+  for (const it of items) {
+    const path = nfc(it.path);
+    let m = path.match(new RegExp(`^${FEEDBACK_DIR}/([^/]+)\\.json$`));
+    if (m) { fbFiles.push({ author: m[1], path, sha: it.sha, branch: it.branch, ref: it.ref }); continue; }
+    m = path.match(/^(week(\d+)-([^/]+))\/(problem(\d+)-([^/]+))\/([^/]+)$/);
+    if (m) {
+      const [, wdir, wn, topic, pdir, pn, pname, fname] = m;
+      const onMain = it.branch === BRANCH;
+      let w = weeks.get(+wn); if (!w) { if (!onMain) continue; w = { num:+wn, dir:wdir, topic, problems:new Map() }; weeks.set(+wn, w); }
+      let p = w.problems.get(+pn); if (!p) { if (!onMain) continue; p = { num:+pn, dir:pdir, name:pname, files:[] }; w.problems.set(+pn, p); }
+      if (/^readme\.md$/i.test(fname) || fname.startsWith('.') || seen.has(path)) continue;
+      seen.add(path);
+      const dot = fname.lastIndexOf('.');
+      p.files.push({ path, fname, person: dot > 0 ? fname.slice(0, dot) : fname, ext: dot > 0 ? fname.slice(dot + 1) : '', week: w.num, prob: p.num, wdir, pdir, branch: it.branch, ref: it.ref, merged: it.branch === BRANCH });
+      continue;
+    }
+    m = path.match(new RegExp(`^${PERSONAL_DIR}/([^/]+)/([^/]+)$`));
+    if (m) {
+      const [, person, fname] = m; if (fname.startsWith('.') || /^readme\.md$/i.test(fname) || seen.has(path)) continue;
+      seen.add(path);
+      const dot = fname.lastIndexOf('.');
+      if (!personal.has(person)) personal.set(person, []);
+      personal.get(person).push({ path, fname, person, ext: dot > 0 ? fname.slice(dot + 1) : '', personal:true, branch: it.branch, ref: it.ref, merged: it.branch === BRANCH });
+    }
+  }
+  const weekArr = [...weeks.values()].sort((a, b) => a.num - b.num);
+  for (const w of weekArr) { w.problems = [...w.problems.values()].sort((a, b) => a.num - b.num); for (const p of w.problems) p.files.sort((a, b) => a.person.localeCompare(b.person)); }
+  return { weeks: weekArr, personal, fbFiles };
+}
+// 피드백 파일 항목 하나의 식별 키 (경로·시각·내용). 로컬 항목이 GitHub 에 올라갔는지 판정에 쓴다
+const fbKey = e => `${nfc(e.path)}|${e.date || ''}|${e.like ? '👍' : String(e.text ?? '')}`;
+const fbValid = e => !!(e && e.path && (e.text || e.like));
+// GitHub 에 올라간 내 항목 (모든 브랜치 합집합, 키로 중복 제거) → Map(키 → { entry, branch })
+function myPushedFeedback(fbFiles) {
+  const m = new Map();
+  for (const f of fbFiles || []) if (f.author === cfg.name) for (const e of f.entries || []) { if (fbValid(e) && !m.has(fbKey(e))) m.set(fbKey(e), { entry: e, branch: f.branch }); }
+  return m;
+}
+// 피드백(글)과 따봉을 경로별로 모은다 → { feedback, likes }
+// 항목 형식: { path, date, text } = 피드백 글, { path, date, like:true } = 따봉
+// 내 로컬 feedback/<이름>.json 을 읽었으면 내 항목은 로컬 파일이 기준이고 GitHub 에 있는 내 항목은 무시한다 —
+// 그래야 수정·삭제·따봉 취소가 바로 보이고, 푸시하면 남들에게도 똑같이 반영된다. (로컬 항목 중 GitHub 에 같은 내용이 있으면 'board', 없으면 'local' = 푸시 전)
+function buildFeedback(fbFiles, prComments, localEntries) {
+  const fb = {}, likes = {}, seen = new Set();
+  const mine = !!(cfg.name && local.fbLoaded);
+  const pushed = mine ? myPushedFeedback(fbFiles) : new Map();
+  const add = (author, e, source, branch, extra = {}) => {
+    const p = nfc(e.path);
+    if (e.like) {   // 따봉: 본인 파일이면 무시, 한 사람당 파일 하나에 하나
+      const owner = data?.fileByPath.get(p)?.person; if (owner && owner === author) return;
+      const k = `👍|${author}|${p}`; if (seen.has(k)) return; seen.add(k);
+      (likes[p] ||= []).push({ author, date: e.date || '', source, branch }); return;
+    }
+    const k = `${author}|${p}|${e.date || ''}|${extra.url || ''}`; if (seen.has(k)) return; seen.add(k);
+    (fb[p] ||= []).push({ source, author, body: String(e.text), date: e.date || '', branch, edited: e.edited || '', ...extra });
+  };
+  for (const f of fbFiles || []) { if (mine && f.author === cfg.name) continue; for (const e of f.entries || []) if (fbValid(e)) add(f.author, e, 'board', f.branch); }
+  for (const c of prComments || []) if (c.path) add(c.author, { path: c.path, text: c.body || '', date: c.date }, 'pr', '', { url: c.url, line: c.line });
+  if (mine) for (const e of localEntries || []) { if (!fbValid(e)) continue; const g = pushed.get(fbKey(e)); add(cfg.name, e, g ? 'board' : 'local', g ? g.branch : ''); }
+  for (const k in fb) fb[k].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  for (const k in likes) likes[k].sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  return { feedback: fb, likes };
+}
+function applyData(payload) {
+  lastPayload = payload;
+  const items = (payload.trees || []).flatMap(t => t.tree.map(x => ({ path: x.path, sha: x.sha, branch: t.branch, ref: t.ref })));
+  const { weeks, personal } = parseTree(items);
+  const fileByPath = new Map();
+  for (const w of weeks) for (const p of w.problems) for (const f of p.files) fileByPath.set(f.path, f);
+  for (const arr of personal.values()) for (const f of arr) fileByPath.set(f.path, f);
+  // 파일별 "올린 시각" = 그 파일이 포함된 PR 중 가장 먼저 연 PR 의 생성 시각 (PR 에 올라간 적 없으면 '')
+  const fileAt = new Map();
+  for (const pr of payload.pulls || []) for (const p of pr.files || []) { const k = nfc(p); if (!fileAt.has(k) || pr.created < fileAt.get(k)) fileAt.set(k, pr.created); }
+  for (const f of fileByPath.values()) f.at = fileAt.get(f.path) || '';
+  const people = new Set(); for (const f of fileByPath.values()) people.add(f.person); if (cfg.name) people.add(cfg.name);
+  data = { weeks, personal, fileByPath, people:[...people], feedback:{}, likes:{}, branches: (payload.trees || []).map(t => t.branch), at: payload.at };
+  Object.assign(data, buildFeedback(payload.feedbackFiles, payload.prComments, local.feedback));
+  buildPersonalProbs();
+  renderAll();
+  if (local.handle && local.perm === 'granted') scanLocal().then(() => { rebuildFeedback(); renderAll(); }).catch(() => {});
+}
+function rebuildFeedback() { if (data && lastPayload) Object.assign(data, buildFeedback(lastPayload.feedbackFiles, lastPayload.prComments, local.feedback)); }
+// PR 목록 + 각 PR 에 포함된 파일 경로. 파일 목록은 PR 번호별로 영구 캐시하고, 열린 PR 만 updated_at 이 바뀌면 다시 받는다 (API 호출 절약)
+async function loadPulls() {
+  const list = await ghAll(`/repos/${OWNER}/${REPO}/pulls?state=all&sort=created&direction=asc`);
+  const cache = safeJson(localStorage.getItem(PRFILES_KEY)) || {};
+  const out = [];
+  for (const pr of list) {
+    const key = String(pr.number);
+    let c = cache[key];
+    if (!c || (pr.state === 'open' && c.updated !== pr.updated_at)) {
+      const files = (await ghAll(`/repos/${OWNER}/${REPO}/pulls/${pr.number}/files`)).filter(f => f.status !== 'removed').map(f => nfc(f.filename));
+      c = cache[key] = { updated: pr.updated_at, files };
+      try { localStorage.setItem(PRFILES_KEY, JSON.stringify(cache)); } catch {}
+    }
+    out.push({ number: pr.number, state: pr.state, created: pr.created_at, merged: pr.merged_at || '', branch: pr.head?.ref || '', files: c.files });
+  }
+  return out;
+}
+async function loadAll(force = false) {
+  const cached = safeJson(localStorage.getItem(CACHE_KEY));
+  if (!force && cached && Date.now() - cached.at < CACHE_TTL) { applyData(cached); return; }
+  $('#btnRefresh').disabled = true; $('#btnRefresh').textContent = '불러오는 중…';
+  try {
+    const branches = await gh(`/repos/${OWNER}/${REPO}/branches?per_page=100`);
+    const main = branches.find(b => b.name === BRANCH); if (!main) throw new Error(`${BRANCH} 브랜치를 찾을 수 없습니다`);
+    const slimTree = t => (t.tree || []).filter(x => x.type === 'blob' && /^(week\d+-|personal\/|feedback\/)/.test(x.path)).map(x => ({ path: x.path, sha: x.sha }));
+    const mainTree = await gh(`/repos/${OWNER}/${REPO}/git/trees/${main.commit.sha}?recursive=1`);
+    const trees = [{ branch: BRANCH, ref: main.commit.sha, tree: slimTree(mainTree) }];
+    const others = await Promise.all(branches.filter(b => b.name !== BRANCH).map(async b => {
+      try { const t = await gh(`/repos/${OWNER}/${REPO}/git/trees/${b.commit.sha}?recursive=1`); return { branch: b.name, ref: b.commit.sha, tree: slimTree(t) }; } catch { return null; }
+    }));
+    trees.push(...others.filter(Boolean));
+    // 피드백 파일 내용 (같은 blob 은 한 번만)
+    const fbRe = new RegExp(`^${FEEDBACK_DIR}/([^/]+)\\.json$`);
+    const bySha = new Map();
+    for (const t of trees) for (const x of t.tree) { const m = x.path.match(fbRe); if (m && !bySha.has(x.sha)) bySha.set(x.sha, { author: m[1], path: x.path, branch: t.branch, ref: t.ref }); }
+    const feedbackFiles = (await Promise.all([...bySha.values()].map(async f => {
+      try { const res = await fetch(rawUrl(f.ref, f.path)); if (!res.ok) return null; const arr = await res.json(); return { author: f.author, branch: f.branch, entries: Array.isArray(arr) ? arr : [] }; } catch { return null; }
+    }))).filter(Boolean);
+    const prComments = (await ghAll(`/repos/${OWNER}/${REPO}/pulls/comments`)).map(c => ({ body: c.body || '', author: c.user?.login || '?', date: c.created_at, url: c.html_url, path: c.path ? nfc(c.path) : undefined, line: c.line || c.original_line || undefined }));
+    // PR 정보(메달 동률 판정용)는 실패해도 전체를 막지 않고 이전 캐시로 대체
+    let pulls = cached?.pulls || [], pullsErr = '';
+    try { pulls = await loadPulls(); } catch (e) { pullsErr = e.message; }
+    const payload = { at: Date.now(), trees, feedbackFiles, prComments, pulls };
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch {}
+    if (pullsErr) showBanner('PR 정보 불러오기 실패: ' + esc(pullsErr) + ' <span class="muted">(메달의 동률 순서가 정확하지 않을 수 있습니다)</span>'); else hideBanner();
+    applyData(payload);
+  } catch (e) {
+    showBanner('데이터 불러오기 실패: ' + esc(e.message) + (cached ? ' <span class="muted">(이전 캐시를 표시합니다)</span>' : ''), 'err');
+    if (cached) applyData(cached); else if (!data) $('#tab-board').innerHTML = '';
+  } finally { $('#btnRefresh').disabled = false; $('#btnRefresh').textContent = '새로고침'; }
+}
+
+async function readme(w, p) {
+  const key = `${w.dir}/${p.dir}`; if (readmeCache.has(key)) return readmeCache.get(key);
+  let text = ''; try { const res = await fetch(rawUrl(BRANCH, key + '/README.md')); if (res.ok) text = await res.text(); } catch {}
+  const r = { title: (text.match(/^#\s+(.+)$/m) || [])[1]?.trim() || p.name, link: (text.match(/링크:\s*(\S+)/) || [])[1] || '', level: (text.match(/난이도:\s*(\S+)/) || [])[1] || '' };
+  readmeCache.set(key, r); return r;
+}
+
+// ---------- 로컬 폴더 ----------
+// file:// 로 열었을 때 이 HTML 이 들어 있는 폴더 경로 (안내용)
+function selfDir() {
+  if (location.protocol !== 'file:') return '';
+  try { let p = decodeURIComponent(location.pathname).replace(/\/[^/]*$/, ''); if (/^\/[A-Za-z]:/.test(p)) p = p.slice(1).replace(/\//g, '\\'); return p; } catch { return ''; }
+}
+async function connectFolder() {
+  let h; try { h = await window.showDirectoryPicker({ mode:'readwrite', id:'psboard-repo', startIn:'desktop' }); } catch (e) { if (e.name !== 'AbortError') toast('폴더 선택 실패: ' + e.message); return false; }
+  let hasGit = false, hasWeek = false;
+  try { await h.getDirectoryHandle('.git'); hasGit = true; } catch {}
+  try { for await (const [n, x] of h.entries()) { if (x.kind === 'directory' && /^week\d+-/.test(n)) { hasWeek = true; break; } } } catch {}
+  if (!hasGit && !hasWeek && !confirm(`"${h.name}" 안에 .git 이나 week1-… 폴더가 없습니다. clone 받은 problem-solving 폴더가 맞나요?\n(정확한 위치: ${selfDir() || 'clone 받은 problem-solving 폴더'})`)) return false;
+  local.handle = h; local.perm = 'granted';
+  try { await idb.set('dir', h); } catch {}
+  await scanLocal(); rebuildFeedback(); renderAll(); toast('폴더 연결됨: ' + h.name); return true;
+}
+async function restoreFolder() {
+  let h; try { h = await idb.get('dir'); } catch { return; }
+  if (!h) return; local.handle = h;
+  try { local.perm = await h.queryPermission({ mode:'readwrite' }); } catch { local.perm = 'prompt'; }
+}
+async function requestPerm() {
+  try { local.perm = await local.handle.requestPermission({ mode:'readwrite' }); } catch (e) { toast('권한 요청 실패: ' + e.message); return; }
+  if (local.perm === 'granted') { await scanLocal(); rebuildFeedback(); renderAll(); }
+}
+async function readBranch() {
+  local.branch = '';
+  try { const g = await local.handle.getDirectoryHandle('.git'); const f = await (await g.getFileHandle('HEAD')).getFile(); const t = (await f.text()).trim(); local.branch = t.startsWith('ref: refs/heads/') ? t.slice(16) : t.slice(0, 7) + ' (detached)'; } catch {}
+}
+async function readLocalFeedback() {
+  local.feedback = []; local.fbLoaded = false;
+  if (!local.handle || local.perm !== 'granted' || !cfg.name) return;
+  try { const d = await local.handle.getDirectoryHandle(FEEDBACK_DIR); const f = await (await d.getFileHandle(`${cfg.name}.json`)).getFile(); const arr = JSON.parse(await f.text()); if (Array.isArray(arr)) { local.feedback = arr; local.fbLoaded = true; } } catch {}
+}
+async function scanLocal() {
+  local.files = new Map(); local.personal = [];
+  if (!local.handle || local.perm !== 'granted' || !data) return;
+  await readBranch(); await readLocalFeedback();
+  if (!cfg.name) return;
+  const me = cfg.name.toLowerCase() + '.';
+  for (const w of data.weeks) {
+    let wd; try { wd = await local.handle.getDirectoryHandle(w.dir); } catch { continue; }
+    for (const p of w.problems) {
+      let pd; try { pd = await wd.getDirectoryHandle(p.dir); } catch { continue; }
+      try { for await (const [n, h] of pd.entries()) { if (h.kind === 'file' && nfc(n).toLowerCase().startsWith(me)) { local.files.set(`${w.dir}/${p.dir}`, nfc(n)); break; } } } catch {}
+    }
+  }
+  await scanLocalPersonal();
+  mergeLocalPersonal();
+}
+// personal/<내이름>/ 안의 파일 목록 (아직 푸시 안 한 개인 문제도 현황판에 보이게)
+// 주차 문제와 똑같이 local.files 에도 넣어야(키: personal/<문제키>) 새로고침·다시 스캔 뒤에도
+// "로컬에 있음" 상태와 폼 자동 불러오기가 유지된다. 같은 문제를 여러 언어로 풀었으면 내 설정 언어를 우선한다.
+async function scanLocalPersonal() {
+  try {
+    const md = await (await local.handle.getDirectoryHandle(PERSONAL_DIR)).getDirectoryHandle(cfg.name);
+    for await (const [n, h] of md.entries()) {
+      const f = nfc(n);
+      if (h.kind !== 'file' || f.startsWith('.') || /^readme\.md$/i.test(f)) continue;
+      local.personal.push(f);
+      const key = `${PERSONAL_DIR}/${pkeyOf(f)}`, cur = local.files.get(key);
+      if (!cur || (f.toLowerCase().endsWith(`.${cfg.ext.toLowerCase()}`) && !cur.toLowerCase().endsWith(`.${cfg.ext.toLowerCase()}`))) local.files.set(key, f);
+    }
+    local.personal.sort((a, b) => a.localeCompare(b));
+  } catch {}
+}
+// 로컬에만 있는 개인 문제를 data 에 끼워 넣는다 (localOnly:true). 다시 스캔해도 중복되지 않게 이전 것부터 지운다
+function mergeLocalPersonal() {
+  if (!data) return;
+  for (const [person, arr] of data.personal) { const kept = arr.filter(f => !f.localOnly); if (kept.length !== arr.length) data.personal.set(person, kept); }
+  for (const [path, f] of [...data.fileByPath]) if (f.localOnly) data.fileByPath.delete(path);
+  if (!cfg.name || !local.personal.length) { buildPersonalProbs(); return; }
+  const mine = data.personal.get(cfg.name) || [];
+  const have = new Set(mine.map(f => f.fname.toLowerCase()));
+  const add = local.personal.filter(n => !have.has(n.toLowerCase())).map(fname => {
+    const dot = fname.lastIndexOf('.');
+    return { path:`${PERSONAL_DIR}/${cfg.name}/${fname}`, fname, person:cfg.name, ext: dot > 0 ? fname.slice(dot + 1) : '', personal:true, localOnly:true, branch: local.branch || '', ref:'', merged:false, at:'' };
+  });
+  if (add.length) {
+    data.personal.set(cfg.name, [...mine, ...add].sort((a, b) => a.fname.localeCompare(b.fname)));
+    for (const f of add) data.fileByPath.set(f.path, f);
+  }
+  buildPersonalProbs();
+}
+// 로컬 폴더의 개인 문제 파일 내용
+async function fetchLocalPersonal(fname) {
+  const md = await (await local.handle.getDirectoryHandle(PERSONAL_DIR)).getDirectoryHandle(cfg.name);
+  return (await (await md.getFileHandle(fname)).getFile()).text();
+}
+// 내 feedback/<이름>.json 을 읽어 fn(배열) 결과로 통째로 다시 쓴다 (추가·수정·삭제·따봉 공통). fn 이 null 을 돌려주면 쓰지 않고 false.
+// 로컬 파일이 없으면 GitHub 에 올라간 내 항목(모든 브랜치 합집합)에서 시작해 기존 항목이 사라지지 않게 한다.
+async function updateLocalFeedback(fn) {
+  await readLocalFeedback();
+  const base = local.fbLoaded ? local.feedback : [...myPushedFeedback(lastPayload?.feedbackFiles).values()].map(x => x.entry);
+  const arr = fn(base.slice()); if (!arr) return false;
+  const d = await local.handle.getDirectoryHandle(FEEDBACK_DIR, { create:true });
+  const fh = await d.getFileHandle(`${cfg.name}.json`, { create:true }); const ws = await fh.createWritable(); await ws.write(JSON.stringify(arr, null, 2) + '\n'); await ws.close();
+  local.feedback = arr; local.fbLoaded = true; return true;
+}
+// 피드백 글 항목 찾기: 경로 + 작성 시각이 식별자
+const isFbEntry = (e, path, date) => !e.like && nfc(e.path) === path && (e.date || '') === date;
+
+// ---------- 렌더 ----------
+function updateHeader() {
+  $('#repoLink').innerHTML = `<a href="${WEB}" target="_blank" rel="noopener">${OWNER}/${REPO} ↗</a>` + (data?.at ? ` · ${fmtDate(new Date(data.at).toISOString()).slice(11)} 기준 · 브랜치 ${data.branches.length}개` : '');
+  $('#meName').innerHTML = cfg.name ? `나: <b>${esc(cfg.name)}.${esc(cfg.ext)}</b>` : '<span class="muted">이름 미설정</span>';
+  $('#rate').textContent = state.rate;
+}
+function renderAll() { renderBoard(); renderPersonal(); renderCreate(); renderFolder(); updateHeader(); }
+function showTab(name) {
+  state.tab = name;
+  $$('.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  for (const s of ['board', 'personal', 'create', 'settings']) $(`#tab-${s}`).hidden = s !== name;
+  if (name === 'settings') renderSettings();
+  if (name === 'personal') renderPersonal();
+  if (name === 'create') renderCreate();
+}
+
+function setSort(key) {
+  if (!SORTS[key]) return;
+  state.sort = state.sort.key === key ? { key, dir: state.sort.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: SORTS[key].dir };
+  try { localStorage.setItem(SORT_KEY, JSON.stringify(state.sort)); } catch {}
+  renderBoard();
+}
+// ---------- 메달: 이번 주 푼 수 1~3위, 동률이면 PR 을 먼저 올린 순 ----------
+const MEDALS = ['🥇', '🥈', '🥉'];
+const byName = (a, b) => a.person.localeCompare(b.person, 'ko');
+// doneAt 이 있는 쪽이 앞, 둘 다 있으면 이른 쪽이 앞 (PR 안 올린 풀이가 있는 사람은 뒤로)
+const byDone = (a, b) => a.doneAt && b.doneAt ? a.doneAt.localeCompare(b.doneAt) : (a.doneAt ? -1 : b.doneAt ? 1 : 0);
+function medalRank(rows) {
+  const ranked = rows.filter(r => r.count > 0).sort((a, b) => b.count - a.count || byDone(a, b) || byName(a, b));
+  return new Map(ranked.slice(0, 3).map((r, i) => [r.person, { icon: MEDALS[i], rank: i + 1 }]));
+}
+// 한 주차의 사람별 행: 문제 칸(main 파일/내 로컬 파일) · 푼 수 · 머지 수 · 모든 주차 합계 · PR 다 올린 시각
+function weekRows(w) {
+  return data.people.map(person => {
+    const cells = w.problems.map(p => ({ p, main: p.files.find(f => f.person === person) || null, local: person === cfg.name ? local.files.get(`${w.dir}/${p.dir}`) || null : null }));
+    const count = cells.filter(c => c.main).length, merged = cells.filter(c => c.main && c.main.merged).length, localCount = cells.filter(c => !c.main && c.local).length;
+    const total = data.weeks.reduce((s, x) => s + x.problems.filter(p => p.files.some(f => f.person === person)).length, 0);
+    // doneAt: 이번 주 올린 파일들이 PR 에 올라간 시각 중 가장 늦은 것 (PR 안 올라간 파일이 하나라도 있으면 '' = 아직 다 안 올림)
+    const ats = cells.filter(c => c.main).map(c => c.main.at || '');
+    const doneAt = ats.length && ats.every(Boolean) ? ats.reduce((m, a) => a > m ? a : m) : '';
+    const parr = data.personal.get(person) || [];
+    const pcount = parr.filter(f => !f.localOnly).length, plocal = parr.length - pcount;
+    return { person, cells, count, merged, unmerged: count - merged, localCount, total, pcount, plocal, doneAt };
+  });
+}
+// ---------- 메달 순위표: 모든 주차의 🥇🥈🥉 를 올림픽식으로 합산 ----------
+// 순위(rank)는 정렬과 무관하게 승점 → 금 → 은 → 동 순으로 매기고, 전부 같으면 공동 순위
+// 순위 동률 풀기: 승점 → 푼 문제 → 금 → 은 → 동 → 👍
+const byOlympic = (a, b) => b.points - a.points || b.solved - a.solved || b.personal - a.personal || b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze || b.likes - a.likes;
+function medalTally() {
+  const KEYS = ['gold', 'silver', 'bronze'];
+  const tally = new Map(data.people.map(p => [p, { person:p, gold:0, silver:0, bronze:0, solved:0, personal:0, likes:0, points:0, wins:[] }]));
+  for (const w of data.weeks) for (const [person, m] of medalRank(weekRows(w))) {
+    const t = tally.get(person); if (!t) continue;
+    t[KEYS[m.rank - 1]]++; t.wins.push(`Week ${w.num} ${m.icon}`);
+  }
+  // 푼 문제 = 모든 주차 합계 (머지 전 포함) · 개인 = personal 폴더 파일 수 (푸시 안 한 로컬 파일은 제외) · 👍 = 내 파일이 받은 따봉 (본인 것은 buildFeedback 에서 이미 제외, personal 포함)
+  for (const t of tally.values()) t.solved = data.weeks.reduce((s, x) => s + x.problems.filter(p => p.files.some(f => f.person === t.person)).length, 0);
+  for (const t of tally.values()) t.personal = (data.personal.get(t.person) || []).filter(f => !f.localOnly).length;
+  for (const [p, arr] of Object.entries(data.likes || {})) { const t = tally.get(data.fileByPath.get(p)?.person); if (t) t.likes += arr.length; }
+  for (const t of tally.values()) t.points = Object.entries(MEDAL_POINTS).reduce((s, [k, v]) => s + t[k] * v, 0);
+  const list = [...tally.values()].sort((a, b) => byOlympic(a, b) || byName(a, b));
+  list.forEach((t, i) => { t.rank = i > 0 && byOlympic(list[i - 1], t) === 0 ? list[i - 1].rank : i + 1; });
+  return list;
+}
+function setMedalSort(key) {
+  if (!MEDAL_SORTS[key]) return;
+  state.msort = state.msort.key === key ? { key, dir: state.msort.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: MEDAL_SORTS[key].dir };
+  try { localStorage.setItem(MSORT_KEY, JSON.stringify(state.msort)); } catch {}
+  renderBoard();
+}
+function medalTableHtml() {
+  const list = medalTally();
+  // 정렬: 선택 기준 → 동점이면 올림픽식 → 이름
+  const { key: sk, dir: sd } = state.msort, sgn = sd === 'asc' ? 1 : -1;
+  list.sort((a, b) => { const v = sk === 'name' ? byName(a, b) : a[sk] - b[sk]; return v ? v * sgn : (byOlympic(a, b) || byName(a, b)); });
+  const arrow = k => sk === k ? (sd === 'asc' ? ' ▲' : ' ▼') : '';
+  const th = (k, cls = '') => `<th${cls ? ` class="${cls}"` : ''}><button class="sorth" data-msort="${k}" title="${esc(MEDAL_SORTS[k].title)} — 눌러서 정렬">${MEDAL_SORTS[k].label}${arrow(k)}</button></th>`;
+  const num = (n, cls = '') => `<td class="${cls}${n ? '' : ' zero'}">${n}</td>`;
+  const sum = k => list.reduce((s, t) => s + t[k], 0);
+  let html = `<h3 class="medals-h">🏅 메달 순위 <span class="muted small">모든 주차 합산 · 승점 = 🥇3 + 🥈2 + 🥉1 + 푼 문제×2 + 개인 문제×1 + 👍×1</span></h3>`;
+  html += `<div class="tablewrap"><table class="board medals"><thead><tr><th title="승점 → 푼 문제 → 금 → 은 → 동 → 👍 순 (모두 같으면 공동 순위)">순위</th>${th('name', 'name')}${th('gold')}${th('silver')}${th('bronze')}${th('solved')}${th('personal')}${th('likes')}${th('points')}</tr></thead><tbody>`;
+  for (const t of list) {
+    html += `<tr class="${t.person === cfg.name ? 'me' : ''}"><td class="rank">${t.rank}</td><th class="name"><button class="link" data-person="${esc(t.person)}" title="${esc((t.wins.length ? t.wins.join(' · ') : '아직 메달 없음') + ` · 푼 문제 ${t.solved} · 개인 문제 ${t.personal} · 👍 ${t.likes}`)}">${esc(t.person)}</button>${t.person === cfg.name ? ' <span class="muted small">(나)</span>' : ''}</th>${num(t.gold)}${num(t.silver)}${num(t.bronze)}${num(t.solved)}${num(t.personal)}${num(t.likes)}${num(t.points, 'sum pts')}</tr>`;
+  }
+  html += `</tbody><tfoot><tr><td></td><th class="name">합계</th><td>${sum('gold')}</td><td>${sum('silver')}</td><td>${sum('bronze')}</td><td>${sum('solved')}</td><td>${sum('personal')}</td><td>${sum('likes')}</td><td>${sum('points')}</td></tr></tfoot></table></div>`;
+  html += `<p class="muted small" style="margin-top:8px"><b>🥇🥈🥉</b> = 각 주차 푼 수 1~3위 (동률이면 PR을 먼저 올린 순 · PR에 안 올린 풀이가 있으면 뒤로 · 진행 중인 주차 포함). <b>푼 문제</b> = 모든 주차 합계 (머지 전 포함). <b>개인</b> = <button class="link goto-personal">개인 문제</button>(<code>personal/</code>)로 올린 문제 수 — <b>1문제 1점</b>(주차 문제는 2점)이고, 아직 푸시하지 않은 로컬 파일은 세지 않습니다. <b>👍</b> = 내 풀이가 받은 따봉 — 풀이 카드의 👍 버튼으로 누르고, 본인 코드에는 못 누르며 한 파일에 한 사람당 하나 (personal 포함). 머리글을 누르면 그 기준으로 정렬, 다시 누르면 역순. 순위 열은 정렬과 상관없이 승점 → 푼 문제 → 금 → 은 → 동 → 👍 순이고, 이름에 마우스를 올리면 세부 내역이 보입니다.</p>`;
+  return html;
+}
+function renderBoard() {
+  const root = $('#tab-board');
+  if (!data) return;
+  const weeks = data.weeks;
+  if (!weeks.length) { root.innerHTML = '<p class="muted">문제 폴더가 없습니다.</p>'; return; }
+  if (!weeks.find(w => w.num === state.week)) state.week = weeks[weeks.length - 1].num;
+  const w = weeks.find(w => w.num === state.week);
+  let html = '<div class="chips">' + weeks.map(x => `<button class="chip ${x.num === state.week ? 'active' : ''}" data-week="${x.num}">Week ${x.num}<small>${esc(x.topic)}</small></button>`).join('') + '</div>';
+
+  if (cfg.name) {
+    const parts = weeks.map(x => { const main = x.problems.filter(p => p.files.some(f => f.person === cfg.name)).length; const loc = x.problems.filter(p => !p.files.some(f => f.person === cfg.name) && local.files.has(`${x.dir}/${p.dir}`)).length; return `Week ${x.num} <b>${main}</b>/${x.problems.length}${loc ? ` <span class="muted">(+로컬 ${loc})</span>` : ''}`; });
+    const myp = (data.personal.get(cfg.name) || []).length;
+    html += `<div class="summary">내 진행: ${parts.join(' · ')}${myp ? ` · 개인 문제 <b>${myp}</b>개 <button class="link goto-personal">보기</button>` : ''}${local.branch ? ` · <span class="muted">로컬 브랜치 <code>${esc(local.branch)}</code></span>` : ''}</div>`;
+  }
+
+  const rows = weekRows(w);
+  const medal = medalRank(rows);
+  // 정렬: 선택 기준 → 동점이면 푼 수 → PR 먼저 올린 순 → 전체 주차 → 이름
+  const { key: sk, dir: sd } = state.sort, sgn = sd === 'asc' ? 1 : -1;
+  rows.sort((a, b) => { const v = sk === 'name' ? byName(a, b) : a[sk] - b[sk]; return v ? v * sgn : (b.count - a.count || byDone(a, b) || b.total - a.total || byName(a, b)); });
+  const arrow = k => sk === k ? (sd === 'asc' ? ' ▲' : ' ▼') : '';
+  html += `<div class="sortbar small"><span class="muted">정렬</span>${Object.entries(SORTS).map(([k, x]) => `<button class="chip ${k === sk ? 'active' : ''}" data-sort="${k}" title="${esc(x.title)}">${x.label}${arrow(k)}</button>`).join('')}<span class="muted">같은 기준을 다시 누르면 역순 · 표의 이름/합계/전체 머리글을 눌러도 됩니다</span></div>`;
+
+  html += `<div class="tablewrap"><table class="board"><thead><tr><th class="name"><button class="sorth" data-sort="name" title="이름순 정렬">이름${arrow('name')}</button></th>${w.problems.map(p => `<th><button class="hdr" data-prob="${p.num}" data-tip="${pad2(p.num)} ${esc(p.name)} · 푼 사람 ${p.files.length}명">${pad2(p.num)}</button></th>`).join('')}<th><button class="sorth" data-sort="count" title="이번 주 푼 수로 정렬 (괄호: 머지 전)">합계${arrow('count')}</button></th><th><button class="sorth" data-sort="total" title="모든 주차 합계로 정렬">전체${arrow('total')}</button></th><th><button class="sorth" data-sort="pcount" title="personal 폴더의 개인 문제 수로 정렬">개인${arrow('pcount')}</button></th></tr></thead><tbody>`;
+  for (const r of rows) {
+    const m = medal.get(r.person);
+    html += `<tr class="${r.person === cfg.name ? 'me' : ''}"><th class="name">${m ? `<span class="medal" title="이번 주 ${m.rank}위 · ${r.count}문제${r.doneAt ? ` · ${fmtDate(r.doneAt)} PR 올림` : ''}">${m.icon}</span>` : ''}<button class="link" data-person="${esc(r.person)}">${esc(r.person)}</button>${r.person === cfg.name ? ' <span class="muted small">(나)</span>' : ''}</th>`;
+    for (const c of r.cells) {
+      if (c.main) html += `<td><button class="badge ${c.main.merged ? '' : 'branch'}" style="--c:${colorOf(c.main.ext)}" data-file="${esc(c.main.path)}" title="${esc(c.main.fname)}${c.main.merged ? '' : ` (브랜치 ${esc(c.main.branch)} · PR 머지 전)`}">${esc(c.main.ext || 'file')}</button></td>`;
+      else if (c.local) { const ext = c.local.slice(c.local.lastIndexOf('.') + 1); html += `<td><button class="badge local" style="--c:${colorOf(ext)}" data-goto="${w.num}:${c.p.num}" title="내 로컬 폴더에만 있음 (아직 푸시 안 됨): ${esc(c.local)} — 클릭하면 파일 만들기로 이동">${esc(ext)}</button></td>`; }
+      else if (r.person === cfg.name) html += `<td><button class="badge todo" data-goto="${w.num}:${c.p.num}" title="${pad2(c.p.num)} ${esc(c.p.name)} — 아직 안 품. 클릭하면 파일 만들기로 이동">＋</button></td>`;
+      else html += '<td class="empty">·</td>';
+    }
+    html += `<td class="sum">${r.count}${r.unmerged ? `<span class="muted small" title="PR 머지 전"> (${r.unmerged})</span>` : ''}${r.localCount ? `<span class="muted small"> +${r.localCount}</span>` : ''}</td><td class="sum muted" title="모든 주차 합계">${r.total}</td><td class="sum">${r.pcount || r.plocal ? `<button class="link" data-personal="${esc(r.person)}" title="${esc(r.person)} 의 개인 문제 보기 (올라감 ${r.pcount}${r.plocal ? ` · 내 로컬 ${r.plocal}` : ''})">${r.pcount}${r.plocal ? `<span class="muted small"> +${r.plocal}</span>` : ''}</button>` : '<span class="empty">·</span>'}</td></tr>`;
+  }
+  const total = w.problems.reduce((s, p) => s + p.files.length, 0), grand = weeks.reduce((s, x) => s + x.problems.reduce((t, p) => t + p.files.length, 0), 0);
+  const pgrand = [...data.personal.values()].reduce((s, a) => s + a.filter(f => !f.localOnly).length, 0);
+  html += `</tbody><tfoot><tr><th class="name">푼 인원</th>${w.problems.map(p => `<td>${p.files.length}</td>`).join('')}<td>${total}</td><td>${grand}</td><td>${pgrand}</td></tr></tfoot></table></div>`;
+  html += `<p class="muted small" style="margin-top:12px">이름 클릭 → 그 사람 풀이 전체 · 문제 번호에 마우스 올리면 문제 이름, 클릭 → 그 문제의 모든 풀이 비교 · 배지 클릭 → 해당 파일과 피드백. <b>실선</b> = main에 머지됨, <b>점선 + 연회색 배경</b> = 푸시는 됐지만 PR 머지 전, <b>회색 캡슐</b>(내 행만) = 내 로컬에만 있음(아직 푸시 안 됨), <b>＋</b> = 내가 아직 안 푼 문제 (클릭하면 그 문제가 선택된 채로 파일 만들기로 이동). 합계 괄호는 머지 전 개수. <b>🥇🥈🥉</b> = 이번 주 푼 수 1~3위 (동률이면 PR을 먼저 올린 순, PR에 안 올린 풀이가 있으면 뒤로). <b>개인</b> = <code>personal/</code> 폴더에 올린 개인 문제 수 — 숫자를 누르면 그 사람 것만, <button class="link goto-personal">개인 문제 탭</button>에서는 전체를 볼 수 있습니다.</p>`;
+  html += medalTableHtml();
+  root.innerHTML = html;
+}
+
+// ---------- 개인 문제 (personal/) ----------
+// 개인 문제는 "파일 이름"이 곧 문제 번호다 (personal/mina/60058.cpp = 프로그래머스 60058번).
+// 그래서 다른 사람이 같은 번호로 올리면 같은 문제의 여러 풀이가 되고, 남이 올린 문제를 나도 이어서 풀 수 있다.
+const lessonUrl = id => `https://school.programmers.co.kr/learn/courses/30/lessons/${id}`;
+const baseName = fname => fname.replace(/\.[^.]+$/, '');
+const pkeyOf = fname => nfc(baseName(fname)).toLowerCase();   // 문제 식별 키 (대소문자 무시)
+// 입력한 "번호 또는 링크" → { base(파일 이름이 될 값), link, ok }
+// 60058 · 프로그래머스 링크 → 60058 / 다른 사이트 링크 → 링크 안의 마지막 숫자 / 영문 이름도 허용
+function parseProblemRef(v) {
+  const t = String(v || '').trim();
+  if (!t) return { base:'', link:'', ok:false };
+  const m = t.match(/programmers\.co\.kr\/\S*?lessons\/(\d+)/i);
+  if (m) return { base:m[1], link:lessonUrl(m[1]), ok:true, kind:'programmers' };
+  if (/^#?\d+$/.test(t)) { const n = t.replace(/^#/, ''); return { base:n, link:lessonUrl(n), ok:true, kind:'programmers' }; }
+  if (/^https?:\/\//i.test(t)) { const nums = t.match(/\/(\d+)(?=[/?#]|$)/g) || []; const n = nums.length ? nums[nums.length - 1].slice(1) : ''; return { base:n, link:t, ok:!!n, kind:'url' }; }
+  if (/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(t)) return { base:t, link:'', ok:true, kind:'name' };
+  return { base:'', link:'', ok:false };
+}
+// 코드 맨 위 주석에서 문제 이름과 링크를 뽑는다 (`// 문제 이름: 괄호 변환`, `// https://…/lessons/60058`)
+function parsePersonalMeta(fname, text) {
+  let title = '', link = '';
+  for (const raw of String(text || '').replace(/\r\n/g, '\n').split('\n').slice(0, 30)) {
+    const line = raw.replace(/^\s*(?:\/\/+|#+|\/\*+|\*+|'''|""")\s?/, '').replace(/\s*(?:\*\/|'''|""")\s*$/, '').trim();
+    if (!link) { const u = line.match(/https?:\/\/\S+/); if (u) link = u[0].replace(/[)\].,]+$/, ''); }
+    if (!title) { const t = line.match(/^(?:문제\s*(?:이름|명)?|제목)\s*[:：]\s*(.+)$/); if (t) title = t[1].trim(); }
+    if (title && link) break;
+  }
+  const base = baseName(fname);
+  if (!link && /^\d+$/.test(base)) link = lessonUrl(base);
+  return { title: title || base, link, base };
+}
+async function personalMeta(f) {
+  if (!f.localOnly && personalMetaCache.has(f.path)) return personalMetaCache.get(f.path);
+  let text = '';
+  try { text = f.localOnly ? await fetchLocalPersonal(f.fname) : await fetchCode(f.ref, f.path); } catch {}
+  const m = parsePersonalMeta(f.fname, text);
+  if (!f.localOnly && text) personalMetaCache.set(f.path, m);
+  return m;
+}
+// 문제별 제목·링크 캐시 (첫 풀이의 코드 헤더에서 읽음) · pendingPersonal = 방금 추가했지만 아직 파일이 없는 문제
+const personalProbMeta = new Map();
+const pendingPersonal = new Map();
+// data.personal (사람 → 파일) 을 문제 기준으로 다시 묶는다 → data.personalProbs: Map(키 → { num, base, name, link, files })
+function buildPersonalProbs() {
+  if (!data) return;
+  const m = new Map();
+  for (const arr of data.personal.values()) for (const f of arr) {
+    const key = pkeyOf(f.fname);
+    let p = m.get(key);
+    if (!p) m.set(key, p = { num:key, base:baseName(f.fname), name:'', link:'', files:[], personal:true });
+    p.files.push(f);
+  }
+  for (const [key, np] of pendingPersonal) {
+    const p = m.get(key);
+    if (!p) m.set(key, { num:key, base:np.base, name:np.name || '', link:np.link || '', files:[], personal:true, isNew:true });
+    else { if (np.name) p.name = np.name; if (np.link) p.link = np.link; }
+  }
+  for (const p of m.values()) {
+    const c = personalProbMeta.get(p.num);
+    if (c) { if (!p.name && c.title && c.title !== p.base) p.name = c.title; if (!p.link) p.link = c.link; }
+    if (!p.link && /^\d+$/.test(p.base)) p.link = lessonUrl(p.base);
+    p.files.sort((a, b) => a.person.localeCompare(b.person));
+  }
+  const byNum = (a, b) => { const x = +a.base, y = +b.base; if (!isNaN(x) && !isNaN(y)) return x - y; if (!isNaN(x)) return -1; if (!isNaN(y)) return 1; return a.base.localeCompare(b.base); };
+  data.personalProbs = new Map([...m.values()].sort(byNum).map(p => [p.num, p]));
+}
+const personalProbs = () => [...(data && data.personalProbs ? data.personalProbs.values() : [])];
+// 아직 제목을 모르는 문제들의 코드를 읽어 제목/링크를 채운 뒤 rerender() 를 한 번 호출 (전부 캐시돼 있으면 아무것도 안 함)
+function fillPersonalMeta(rerender) {
+  const todo = personalProbs().filter(p => p.files.length && !personalProbMeta.has(p.num));
+  if (!todo.length) return;
+  Promise.all(todo.map(async p => {
+    const meta = await personalMeta(p.files[0]).catch(() => null);
+    personalProbMeta.set(p.num, meta || { title:p.base, link:'' });
+  })).then(() => { buildPersonalProbs(); rerender && rerender(); });
+}
+
+// ---------- 개인 문제 탭 (문제 기준) ----------
+function psCard(p) {
+  const st = probStatus(personalWeek(), p);
+  const mine = p.files.some(f => f.person === cfg.name);
+  const people = p.files.map(f => `<button class="badge ${f.localOnly ? 'local' : f.merged ? '' : 'branch'}" style="--c:${colorOf(f.ext)}" data-psfile="${esc(f.path)}" title="${esc(f.person)} 의 풀이 (${esc(f.fname)})${f.localOnly ? ' · 내 로컬, 푸시 전' : f.merged ? '' : ` · ${esc(f.branch)} 브랜치`}">${esc(f.person)}</button>`).join('');
+  return `<div class="pscard ${st.cls}" data-pskey="${esc(p.num)}" title="누르면 이 문제의 모든 풀이를 봅니다">
+    <div class="ps-head"><b class="ps-title">${esc(p.name || p.base)}</b>${p.link ? `<a class="small" href="${esc(p.link)}" target="_blank" rel="noopener" title="문제 페이지 열기">문제 ↗</a>` : ''}</div>
+    <div class="muted small ps-sub">#${esc(p.base)} · 푼 사람 ${p.files.filter(f => !f.localOnly).length}명</div>
+    <div class="ps-people">${people || '<span class="muted small">아직 아무도 풀지 않음</span>'}</div>
+    <div class="ps-foot"><span class="ps-st">${st.label || '아직 안 푼 문제'}</span><span class="spacer"></span><button class="btn small ${mine ? '' : 'primary'}" data-pssolve="${esc(p.num)}">${mine ? '내 풀이 고치기' : '나도 풀기'}</button></div>
+  </div>`;
+}
+function renderPersonal() {
+  const root = $('#tab-personal');
+  if (!data) return;
+  if (!data.personalProbs) buildPersonalProbs();
+  const all = personalProbs();
+  const solvedByMe = p => p.files.some(f => f.person === cfg.name);
+  const head = `<div class="card"><div class="row" style="margin:0"><div style="flex:1;min-width:260px"><h3 style="margin:0">개인 문제 <span class="muted small">personal/ · 서로 올린 문제를 같이 풉니다</span></h3>
+      <p class="muted small" style="margin:6px 0 0">프로그래머스 <b>번호나 링크</b>만 넣으면 <code>personal/내이름/<b>번호</b>.확장자</code> 로 파일이 만들어지고 문제 링크가 자동으로 걸립니다. 남이 올린 문제는 <b>나도 풀기</b> 로 그대로 이어서 풀 수 있고, 개인 문제도 <b>1문제 1점</b> 으로 메달 순위 승점에 들어갑니다.</p></div>
+      <button class="btn primary" id="psNew">＋ 새 문제 올리기</button></div></div>`;
+  if (!all.length) {
+    root.innerHTML = head + `<div class="card"><p class="muted">아직 올라온 개인 문제가 없습니다. <b>＋ 새 문제 올리기</b> 로 첫 문제를 올려보세요.</p></div>`;
+    $('#psNew').addEventListener('click', gotoPersonalNew);
+    return;
+  }
+  const counts = { all: all.length, mine: all.filter(solvedByMe).length };
+  counts.todo = counts.all - counts.mine;
+  if (!['all', 'mine', 'todo'].includes(state.pFilter)) state.pFilter = 'all';
+  const chip = (k, label, n) => `<button class="chip ${state.pFilter === k ? 'active' : ''}" data-pfilter="${k}">${label}<small>${n}</small></button>`;
+  let html = head + `<div class="chips">${chip('all', '전체 문제', counts.all)}${chip('mine', '내가 푼 문제', counts.mine)}${chip('todo', '아직 안 푼 문제', counts.todo)}</div>`;
+  const shown = state.pFilter === 'mine' ? all.filter(solvedByMe) : state.pFilter === 'todo' ? all.filter(p => !solvedByMe(p)) : all;
+  html += shown.length ? `<div class="psgrid">${shown.map(psCard).join('')}</div>` : '<p class="muted">해당하는 문제가 없습니다.</p>';
+  html += `<div class="plegend small muted" style="margin-top:10px"><span><span class="pk done"></span> 내가 풀어서 main 머지됨</span><span><span class="pk pushed"></span> 내가 풀어서 푸시됨</span><span><span class="pk local"></span> 내 로컬에만 있음</span><span><span class="pk"></span> 아직 내가 안 푼 문제</span></div>`;
+  html += `<p class="muted small" style="margin-top:12px">카드를 누르면 그 문제의 <b>모든 사람 풀이</b>(코드·피드백·👍)가 열리고, 이름 배지를 누르면 그 사람 풀이만 바로 열립니다. 문제 이름은 코드 맨 위 <code>// 문제: …</code> 주석에서 읽어 오고, 파일 이름이 숫자면 프로그래머스 문제로 자동 연결됩니다.</p>`;
+  root.innerHTML = html;
+  $('#psNew').addEventListener('click', gotoPersonalNew);
+  fillPersonalMeta(() => { if (state.tab === 'personal') renderPersonal(); });
+}
+// 한 문제의 모든 풀이
+function openPersonalProblem(key) {
+  const p = data.personalProbs.get(key); if (!p) return;
+  const body = `<div class="row" style="margin:0 0 12px"><button class="btn primary" data-pssolve="${esc(p.num)}">${p.files.some(f => f.person === cfg.name) ? '내 풀이 고치기' : '나도 풀기'}</button>${p.link ? `<a class="btn" href="${esc(p.link)}" target="_blank" rel="noopener">🚀 문제 풀러 가기 ↗</a>` : ''}</div>`
+    + (p.files.map(f => fileCard(f)).join('') || '<p class="muted">아직 아무도 풀지 않은 문제입니다. "나도 풀기" 로 첫 풀이를 올려보세요.</p>');
+  openDetail(p.name || p.base, `#${esc(p.base)} · personal/ · 푼 사람 ${p.files.filter(f => !f.localOnly).length}명`, body);
+}
+// 사람별 개인 문제 (현황표의 '개인' 열)
+function openPersonal(person) {
+  const pf = data.personal.get(person) || [];
+  openDetail(`${person} 의 개인 문제`, `personal/${esc(person)} · ${pf.length}개`, pf.map(f => fileCard(f)).join('') || '<p class="muted">아직 개인 문제가 없습니다.</p>');
+}
+// 개인 문제를 '내 파일 만들기' 탭에서 이어 풀기
+function gotoPersonal(key) {
+  if (state.cWeek !== PERSONAL_WEEK || state.cProb !== key) { if (!confirmDiscard()) return; state.cWeek = PERSONAL_WEEK; state.cProb = key; }
+  closeDetail(); showTab('create');
+  setTimeout(() => $('.pcard.sel')?.scrollIntoView({ block:'center', behavior:'smooth' }), 0);
+}
+function gotoPersonalNew() {
+  if (state.cWeek !== PERSONAL_WEEK) { if (!confirmDiscard()) return; state.cWeek = PERSONAL_WEEK; state.cProb = ''; }
+  closeDetail(); showTab('create');
+  setTimeout(() => { $('#newPersonal')?.scrollIntoView({ block:'center', behavior:'smooth' }); $('#npId').focus(); }, 0);
+}
+
+// ---------- 상세 패널 ----------
+function openDetail(title, sub, body) { $('#detailTitle').textContent = title; $('#detailSub').innerHTML = sub || ''; $('#detailBody').innerHTML = body; $('#detail').hidden = false; $('.panel').scrollTop = 0; $$('.fcard .code:not([hidden])', $('#detailBody')).forEach(c => loadCode(c.closest('.fcard'))); }
+function closeDetail() { $('#detail').hidden = true; }
+function fbItem(c) {
+  const tag = c.source === 'pr' ? `<span class="tag pr">PR 리뷰${c.line ? ` L${c.line}` : ''}</span>` : c.source === 'local' ? '<span class="tag local">로컬 · 푸시 전</span>' : `<span class="tag">피드백</span>${c.branch && c.branch !== BRANCH ? ` <span class="tag branch">${esc(c.branch)} 브랜치</span>` : ''}`;
+  // 내가 쓴 피드백(PR 리뷰 제외)은 폴더가 연결돼 있으면 수정/삭제 가능 — 내 feedback/<이름>.json 을 고쳐 쓰고, 푸시하면 모두에게 반영
+  const mine = c.author === cfg.name && c.source !== 'pr' && local.handle && local.perm === 'granted';
+  const act = mine ? `<span class="fb-act"><button class="link fb-edit" title="내용 수정">수정</button><button class="link fb-del" title="이 피드백 삭제">삭제</button></span>` : '';
+  return `<div class="fb-item" data-date="${esc(c.date)}"><div class="fb-meta"><b>${esc(c.author)}</b> ${tag} <span class="muted small">${fmtDate(c.date)}${c.edited ? ` · 수정됨 ${fmtDate(c.edited)}` : ''}</span> ${c.url ? `<a class="small" href="${esc(c.url)}" target="_blank" rel="noopener">↗</a>` : ''}${act}</div><div class="fb-body">${esc(c.body)}</div></div>`;
+}
+// 따봉 버튼: 내 코드면 개수만, 아니면 누르기/취소 토글. 누른 사람 이름 표시 (푸시 전이면 표시)
+function likeHtml(f) {
+  const lk = data.likes[f.path] || [], n = lk.length;
+  const who = lk.map(l => l.author + (l.source === 'local' ? '(푸시 전)' : '')).join(' · ');
+  const whoHtml = n ? `<span class="like-who muted small">${esc(who)}</span>` : '';
+  if (f.person === cfg.name) return `<span class="like own" title="내 코드에는 못 누릅니다${n ? ' · 받은 따봉: ' + esc(who) : ''}">👍 ${n}</span>${whoHtml}`;
+  const liked = lk.some(l => l.author === cfg.name);
+  return `<button class="btn small like-btn${liked ? ' on' : ''}" title="${liked ? '따봉 취소' : '좋은 코드에 따봉! (받는 사람 1점)'}">👍 ${n}</button>${whoHtml}`;
+}
+function fbSection(f) {
+  const fb = data.feedback[f.path] || [];
+  return `<div class="fb"><div class="fb-head">피드백 <span class="count">${fb.length}</span><span class="spacer"></span>${likeHtml(f)}</div><div class="fb-list">${fb.map(fbItem).join('') || '<p class="muted small">아직 피드백이 없습니다.</p>'}</div>${fbForm()}</div>`;
+}
+// 카드의 피드백/따봉 부분만 다시 그림 (저장·수정·삭제·따봉 후)
+function refreshCard(card) { const f = data.fileByPath.get(card.dataset.path); if (f) card.querySelector('.fb').outerHTML = fbSection(f); }
+function fbForm() {
+  if (!cfg.name) return `<p class="muted small">피드백을 남기려면 <button class="link goto-create">내 파일 만들기</button>에서 파일 이름을 정해주세요.</p>`;
+  const ready = local.handle && local.perm === 'granted';
+  return `<div class="fb-form"><textarea placeholder="피드백을 남겨보세요 → ${FEEDBACK_DIR}/${esc(cfg.name)}.json 에 저장됩니다. 풀이와 함께 커밋/푸시하면 모두에게 보입니다."></textarea><div class="row"><button class="btn small primary fb-submit">${ready ? '피드백 저장' : '피드백 JSON 복사'}</button><span class="muted small">${ready ? 'Ctrl+Enter · 저장 후 GitHub Desktop에서 커밋 → Push' : `폴더가 연결되지 않아 복사만 됩니다 — <button class="link goto-settings">설정</button>에서 폴더를 연결하면 바로 저장됩니다`}</span></div></div>`;
+}
+function fileCard(f, expanded = false) {
+  const where = f.personal ? `personal/${esc(f.person)}` : `Week ${f.week} · ${pad2(f.prob)}`;
+  return `<div class="fcard" data-path="${esc(f.path)}">
+    <div class="fcard-head"><span class="dot" style="background:${colorOf(f.ext)}"></span><strong>${esc(f.fname)}</strong>${f.localOnly ? '<span class="tag local" title="내 로컬 폴더에만 있음 (아직 푸시 안 됨)">로컬 · 푸시 전</span>' : f.merged ? '' : `<span class="tag branch" title="아직 main에 머지되지 않음">${esc(f.branch)} 브랜치</span>`}<span class="muted small">${where} · ${esc(f.path)}</span><span class="spacer"></span>
+      ${f.localOnly ? '' : `<a class="small" href="${webUrl(f.branch, f.path)}" target="_blank" rel="noopener">GitHub ↗</a>`}<button class="btn small toggle-code">${expanded ? '코드 접기' : '코드 보기'}</button></div>
+    <div class="code" ${expanded ? '' : 'hidden'}><pre class="muted">불러오는 중…</pre></div>
+    ${fbSection(f)}
+  </div>`;
+}
+const HL_LANG = { cpp:'cpp', cc:'cpp', h:'cpp', hpp:'cpp', c:'c', py:'python', java:'java', js:'javascript', ts:'typescript', kt:'kotlin', go:'go', rs:'rust', cs:'csharp' };
+function showCode(pre, path, text) {
+  const lang = HL_LANG[path.slice(path.lastIndexOf('.') + 1).toLowerCase()];
+  if (window.hljs && lang && hljs.getLanguage(lang)) pre.innerHTML = hljs.highlight(text, { language: lang }).value;
+  else pre.textContent = text;
+  pre.classList.remove('muted');
+}
+// GitHub 의 파일 내용 (같은 ref+경로는 한 번만 받음)
+async function fetchCode(ref, path) {
+  const k = `${ref}:${path}`; if (codeCache.has(k)) return codeCache.get(k);
+  const res = await fetch(rawUrl(ref, path)); if (!res.ok) throw new Error(res.status);
+  const t = await res.text(); codeCache.set(k, t); return t;
+}
+async function loadCode(card) {
+  const path = card.dataset.path, pre = card.querySelector('.code pre'), f = data.fileByPath.get(path);
+  try { showCode(pre, path, f && f.localOnly ? await fetchLocalPersonal(f.fname) : await fetchCode(f ? f.ref : BRANCH, path)); }
+  catch (e) { pre.textContent = '코드 불러오기 실패: ' + e.message; }
+}
+function openPerson(person) {
+  const parts = [];
+  for (const w of data.weeks) {
+    const files = []; for (const p of w.problems) for (const f of p.files) if (f.person === person) files.push(f);
+    if (files.length) parts.push(`<h3>Week ${w.num} <span class="muted">${esc(w.topic)}</span> — ${files.length}/${w.problems.length}문제</h3>` + files.map(f => fileCard(f)).join(''));
+  }
+  const pf = data.personal.get(person) || [];
+  if (pf.length) parts.push(`<h3>개인 문제 <span class="muted">personal/${esc(person)} · ${pf.length}개</span></h3>` + pf.map(f => fileCard(f)).join(''));
+  openDetail(`${person} 의 풀이`, `총 ${[...data.fileByPath.values()].filter(f => f.person === person).length}개 파일 (main + 브랜치)`, parts.join('') || '<p class="muted">아직 올린 풀이가 없습니다.</p>');
+}
+function openProblem(wn, pn) {
+  const w = data.weeks.find(w => w.num === wn), p = w && w.problems.find(p => p.num === pn); if (!p) return;
+  const readmeLink = `<a href="${webUrl(BRANCH, `${w.dir}/${p.dir}/README.md`)}" target="_blank" rel="noopener">README ↗</a>`;
+  openDetail(`Week ${wn} · ${pad2(pn)} ${p.name}`, `${readmeLink} · 푼 사람 ${p.files.length}명`, p.files.map(f => fileCard(f)).join('') || '<p class="muted">아직 아무도 올리지 않았습니다.</p>');
+  readme(w, p).then(r => { $('#detailSub').innerHTML = `<b>${esc(r.title)}</b>${r.level ? ' · ' + esc(r.level) : ''}${r.link ? ` · <a href="${esc(r.link)}" target="_blank" rel="noopener">프로그래머스 ↗</a>` : ''} · ${readmeLink} · 푼 사람 ${p.files.length}명`; });
+}
+function openFile(path) {
+  const f = data.fileByPath.get(path); if (!f) return;
+  openDetail(f.fname, esc(path), fileCard(f, true));
+  if (f.personal) personalMeta(f).then(m => {
+    if ($('#detail').hidden || $('#detailTitle').textContent !== f.fname) return;
+    $('#detailSub').innerHTML = `${m.title && m.title !== m.base ? `<b>${esc(m.title)}</b> · ` : ''}${esc(path)}${m.link ? ` · <a href="${esc(m.link)}" target="_blank" rel="noopener">문제 ↗</a>` : ''}`;
+  }).catch(() => {});
+}
+
+async function submitFeedback(card, btn) {
+  const ta = card.querySelector('.fb-form textarea'), text = ta.value.trim(); if (!text) { toast('내용을 입력하세요'); return; }
+  const path = card.dataset.path;
+  const entry = { path, date: new Date().toISOString(), text };
+  if (!(local.handle && local.perm === 'granted')) {
+    await copyText(JSON.stringify(entry, null, 2));
+    toast(`복사됨 — ${FEEDBACK_DIR}/${cfg.name}.json 배열 안에 붙여넣고 푸시하세요`); return;
+  }
+  btn.disabled = true;
+  try {
+    await updateLocalFeedback(arr => [...arr, entry]);
+    rebuildFeedback(); refreshCard(card);
+    toast(`저장됨: ${FEEDBACK_DIR}/${cfg.name}.json — 커밋 후 Push 하면 공유됩니다`);
+  } catch (e) { toast('저장 실패: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+function startEdit(card, item) {
+  const path = card.dataset.path, date = item.dataset.date;
+  const cur = (data.feedback[path] || []).find(c => c.author === cfg.name && c.source !== 'pr' && c.date === date); if (!cur) return;
+  item.classList.add('editing');
+  item.querySelector('.fb-body').innerHTML = `<textarea class="fb-edit-ta"></textarea><div class="row" style="margin:0"><button class="btn small primary fb-save">저장</button><button class="btn small fb-cancel">취소</button><span class="muted small">Ctrl+Enter 저장 · Esc 취소</span></div>`;
+  const ta = item.querySelector('.fb-edit-ta'); ta.value = cur.body; ta.focus();
+}
+async function saveEdit(card, item, btn) {
+  const path = card.dataset.path, date = item.dataset.date, text = item.querySelector('.fb-edit-ta').value.trim();
+  if (!text) { toast('내용을 입력하세요'); return; }
+  btn.disabled = true;
+  try {
+    const ok = await updateLocalFeedback(arr => arr.some(e => isFbEntry(e, path, date)) ? arr.map(e => isFbEntry(e, path, date) ? { ...e, text, edited: new Date().toISOString() } : e) : null);
+    if (!ok) { toast('원본 항목을 내 피드백 파일에서 찾지 못했습니다'); refreshCard(card); return; }
+    rebuildFeedback(); refreshCard(card); toast('수정됨 — 커밋 후 Push 하면 반영됩니다');
+  } catch (e) { toast('수정 실패: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+async function deleteFeedback(card, item) {
+  const path = card.dataset.path, date = item.dataset.date;
+  if (!confirm('이 피드백을 삭제할까요?\n(커밋 후 Push 하면 모두에게서 사라집니다)')) return;
+  try {
+    const ok = await updateLocalFeedback(arr => arr.some(e => isFbEntry(e, path, date)) ? arr.filter(e => !isFbEntry(e, path, date)) : null);
+    if (!ok) { toast('항목을 내 피드백 파일에서 찾지 못했습니다'); return; }
+    rebuildFeedback(); refreshCard(card); toast('삭제됨 — 커밋 후 Push 하면 반영됩니다');
+  } catch (e) { toast('삭제 실패: ' + e.message); }
+}
+// 따봉 누르기/취소: { path, date, like:true } 항목을 내 피드백 파일에 넣거나 뺌
+async function toggleLike(card, btn) {
+  if (!cfg.name) { toast('따봉을 누르려면 설정에서 파일 이름을 정해주세요'); return; }
+  const path = card.dataset.path, f = data.fileByPath.get(path);
+  if (f && f.person === cfg.name) { toast('내 코드에는 못 누릅니다'); return; }
+  const liked = (data.likes[path] || []).some(l => l.author === cfg.name);
+  if (!(local.handle && local.perm === 'granted')) {
+    if (liked) { toast('폴더가 연결되지 않아 취소할 수 없습니다 — 설정에서 폴더를 연결하세요'); return; }
+    await copyText(JSON.stringify({ path, date: new Date().toISOString(), like: true }, null, 2));
+    toast(`복사됨 — ${FEEDBACK_DIR}/${cfg.name}.json 배열 안에 붙여넣고 푸시하세요`); return;
+  }
+  btn.disabled = true;
+  try {
+    await updateLocalFeedback(arr => liked ? arr.filter(e => !(e.like && nfc(e.path) === path)) : [...arr.filter(e => !(e.like && nfc(e.path) === path)), { path, date: new Date().toISOString(), like: true }]);
+    rebuildFeedback(); refreshCard(card); renderBoard();
+    toast(liked ? '따봉 취소됨 — 커밋 후 Push 하면 반영됩니다' : '👍 따봉! — 커밋 후 Push 하면 반영됩니다');
+  } catch (e) { toast('저장 실패: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
+// ---------- 내 파일 만들기 ----------
+// '개인 문제' 는 주차처럼 다루는 가상 주차 (problems = personal/ 의 문제들, dir = personal)
+const personalWeek = () => ({ num:PERSONAL_WEEK, dir:PERSONAL_DIR, topic:'개인 문제', personal:true, problems: personalProbs() });
+const curWeek = () => data && (state.cWeek === PERSONAL_WEEK ? personalWeek() : data.weeks.find(w => w.num === state.cWeek));
+const curProb = () => { const w = curWeek(); return w && w.problems.find(p => p.num === state.cProb); };
+// local.files 와 form.key 에서 쓰는 문제 식별자 (주차: week1-…/problem01-… · 개인: personal/<문제키>)
+const probKey = (w, p) => w.personal ? `${PERSONAL_DIR}/${p.num}` : `${w.dir}/${p.dir}`;
+// 만들어질 파일 경로 — 개인 문제는 파일 이름이 문제 번호이고 폴더가 내 이름
+const targetPath = () => { const w = curWeek(), p = curProb(); return w && p ? (w.personal ? `${PERSONAL_DIR}/${cfg.name || '이름'}/${p.base}.${cfg.ext}` : `${w.dir}/${p.dir}/${cfg.name || '이름'}.${cfg.ext}`) : ''; };
+// 설정 탭의 "저장소 폴더 연결" 카드
+function renderFolder() {
+  const fs = $('#folderStatus');
+  // 푸시 안 된 피드백/따봉 변경 = 로컬에만 있는 항목(추가·수정) + GitHub 에만 있는 항목(삭제)
+  const pending = cfg.name && local.fbLoaded ? (() => { const g = myPushedFeedback(lastPayload?.feedbackFiles), l = new Set(local.feedback.filter(fbValid).map(fbKey)); let n = 0; for (const k of l) if (!g.has(k)) n++; for (const k of g.keys()) if (!l.has(k)) n++; return n; })() : 0;
+  if (!('showDirectoryPicker' in window)) fs.innerHTML = `<div class="box warn">이 브라우저는 폴더에 직접 쓰기를 지원하지 않습니다. <b>Chrome</b> 또는 <b>Edge</b>로 이 파일을 열어주세요. Brave는 기본으로 꺼져 있어 <code>brave://flags/#file-system-access-api</code> 를 Enabled로 바꾸면 됩니다. (그 외 브라우저는 내 파일 만들기의 "내용 복사" 후 직접 저장)</div>`;
+  else if (!local.handle) { const sd = selfDir(); fs.innerHTML = `<div class="row"><button id="btnConnect" class="btn primary">problem-solving 폴더 선택</button><span class="muted small">clone 받은 저장소의 최상위 폴더(안에 <code>.git</code>, <code>week1-…</code> 폴더가 있는 곳)를 선택하세요. 한 번 선택하면 기억됩니다.</span></div>${sd ? `<div class="box warn" style="margin-top:6px">브라우저 보안상 페이지가 폴더를 스스로 열 수는 없어서 한 번은 직접 골라야 합니다. 이 파일이 있는 폴더를 그대로 선택하면 됩니다:<br><code>${esc(sd)}</code></div>` : ''}`; }
+  else if (local.perm !== 'granted') fs.innerHTML = `<div class="row"><span>📁 ${esc(local.handle.name)}</span><button id="btnPerm" class="btn primary">폴더 접근 다시 허용</button><button id="btnConnect" class="btn small">다른 폴더 선택</button><span class="muted small">브라우저를 다시 열면 권한을 한 번 더 확인합니다.</span></div>`;
+  else fs.innerHTML = `<div class="row"><span class="box ok" style="margin:0">📁 연결됨: <b>${esc(local.handle.name)}</b>${local.branch ? ` · 브랜치 <code>${esc(local.branch)}</code>` : ''} · 내 로컬 풀이 ${local.files.size}개${pending ? ` · 푸시 안 된 피드백/따봉 변경 ${pending}개` : ''}</span><button id="btnRescan" class="btn small">다시 스캔</button><button id="btnConnect" class="btn small">다른 폴더 선택</button></div>${local.branch === 'main' ? '<div class="box warn">지금 <b>main</b> 브랜치입니다. GitHub Desktop이나 터미널에서 본인 브랜치로 전환한 뒤 커밋하세요.</div>' : ''}`;
+  $('#btnConnect')?.addEventListener('click', connectFolder);
+  $('#btnPerm')?.addEventListener('click', requestPerm);
+  $('#btnRescan')?.addEventListener('click', async () => { await scanLocal(); rebuildFeedback(); renderAll(); toast('스캔 완료'); });
+}
+function renderCreate() {
+  // 폴더가 준비되지 않았거나 main 브랜치면 상단에 안내만 (연결 자체는 설정 탭에서)
+  const note = $('#createFolderNote');
+  const noteHtml = !fsSupported() ? '이 브라우저는 폴더에 직접 쓰기를 지원하지 않아 "파일 생성" 대신 "내용 복사"로 직접 저장해야 합니다. (Chrome/Edge 권장 · 자세한 내용은 <button class="link goto-settings">설정</button>)'
+    : !local.handle ? '저장소 폴더가 연결되지 않아 "파일 생성" 대신 "내용 복사"만 됩니다. <button class="link goto-settings">설정</button>에서 폴더를 연결하세요.'
+    : !folderReady() ? `📁 <b>${esc(local.handle.name)}</b> 폴더 접근을 다시 허용해야 파일을 만들 수 있습니다. <button class="link goto-settings">설정</button>에서 허용하세요.`
+    : local.branch === 'main' ? '지금 <b>main</b> 브랜치입니다. GitHub Desktop이나 터미널에서 본인 브랜치로 전환한 뒤 커밋하세요.' : '';
+  note.innerHTML = noteHtml ? `<div class="box warn" style="margin:0 0 12px">${noteHtml}</div>` : ''; note.hidden = !noteHtml;
+
+  syncNameRow();
+  if (!data) { $('#createWeeks').innerHTML = ''; $('#createProbs').innerHTML = '<p class="muted">불러오는 중…</p>'; return; }
+  if (state.cWeek !== PERSONAL_WEEK && !data.weeks.find(w => w.num === state.cWeek)) { state.cWeek = data.weeks.length ? data.weeks[data.weeks.length - 1].num : 0; state.cProb = 0; }
+  const gauge = (w, label, sub, title) => {
+    const st = w.problems.map(p => probStatus(w, p).cls), done = st.filter(s => s === 'done' || s === 'pushed').length, loc = st.filter(s => s === 'local').length;
+    const n = w.problems.length, pct = k => n ? `${(k / n * 100).toFixed(1)}%` : '0%';   // 게이지 채우기 비율 (0문제면 0%)
+    return `<button class="chip gauge${w.num === state.cWeek ? ' sel' : ''}${n && done === n ? ' full' : ''}" data-cweek="${esc(String(w.num))}" style="--p1:${pct(done)};--p2:${pct(done + loc)}" title="${title(done, loc, n)}">${label}<small>${sub} · ${done}${loc ? `+${loc}` : ''}/${n}</small></button>`;
+  };
+  const pw = personalWeek();
+  $('#createWeeks').innerHTML = data.weeks.map(w => gauge(w, `Week ${w.num}`, esc(w.topic), (d, l, n) => `올라감 ${d} · 로컬 ${l} · 남음 ${n - d - l} / ${n}`)).join('')
+    + gauge(pw, '개인 문제', 'personal/', (d, l, n) => `personal/ · 올라온 문제 ${n}개 중 내가 푼 것 ${d}${l ? ` (+로컬 ${l})` : ''}`);
+  $('#newPersonal').hidden = state.cWeek !== PERSONAL_WEEK;
+  if (state.cWeek === PERSONAL_WEEK) updateNpInfo();
+  renderProbGrid();
+}
+// 내용 작성 칸의 파일 이름/형식 ↔ cfg 동기화
+function syncNameRow() {
+  const n = $('#cName'); if (document.activeElement !== n) n.value = cfg.name;
+  $('#cExt').value = cfg.ext;
+  $('#cTarget').textContent = targetPath() || `${cfg.name || '이름'}.${cfg.ext}`;
+}
+let nameTimer = 0;
+function applyNameChange() {
+  const n = $('#cName').value.trim(), ext = $('#cExt').value;
+  if (n && !/^[A-Za-z0-9_-]+$/.test(n)) { toast('파일 이름은 영문/숫자/-/_ 만 사용하세요'); return; }
+  if (n === cfg.name && ext === cfg.ext) { syncNameRow(); return; }
+  cfg.name = n; cfg.ext = ext; saveCfg(); hideBanner();
+  if (lastPayload) applyData(lastPayload); else renderAll();   // 사람 목록·상태색·로컬 스캔 다시
+}
+// 내 기준 문제 상태: done(main 머지) / pushed(브랜치) / local(로컬만) / todo
+function probStatus(w, p) {
+  const mine = cfg.name ? p.files.find(f => f.person === cfg.name && !f.localOnly) : null;
+  if (mine) return mine.merged ? { cls:'done', label:'✅ main 머지됨' } : { cls:'pushed', label:`⬆ 푸시됨 · ${mine.branch}` };
+  if (local.files.has(probKey(w, p))) return { cls:'local', label:'💾 로컬에만 있음' };
+  return { cls:'todo', label:'' };
+}
+function renderProbGrid() {
+  const w = curWeek(), g = $('#createProbs');
+  if (!w) { g.innerHTML = ''; $('#createProgress').textContent = ''; updateProbInfo(); return; }
+  if (!w.problems.find(p => p.num === state.cProb)) { const first = w.problems.find(p => probStatus(w, p).cls === 'todo') || w.problems[0]; state.cProb = first ? first.num : (w.personal ? '' : 0); }
+  const st = w.problems.map(p => probStatus(w, p).cls);
+  const done = st.filter(x => x === 'done' || x === 'pushed').length, loc = st.filter(x => x === 'local').length;
+  $('#createProgress').textContent = w.personal
+    ? `개인 문제 ${w.problems.length}개 · 내가 푼 것 ${done}${loc ? ` (+로컬 ${loc})` : ''} · 아직 안 푼 것 ${st.filter(x => x === 'todo').length}`
+    : `Week ${w.num}: 올라감 ${done} · 로컬 ${loc} · 남음 ${st.filter(x => x === 'todo').length} / ${w.problems.length}`;
+  g.innerHTML = w.problems.map(p => {
+    const s = probStatus(w, p);
+    const sel = p.num === state.cProb ? ' sel' : '';
+    if (w.personal) return `<button class="pcard ${s.cls}${sel}" data-cprob="${esc(String(p.num))}" title="${esc(p.name || p.base)} — 푼 사람 ${p.files.filter(f => !f.localOnly).length}명"><span class="pn">#${esc(p.base)}</span><span class="pname">${esc(p.name || '(제목 미확인)')}</span><span class="pst">${s.label || `푼 사람 ${p.files.filter(f => !f.localOnly).length}명`}</span></button>`;
+    return `<button class="pcard ${s.cls}${sel}" data-cprob="${p.num}" title="${esc(p.name)}"><span class="pn">${pad2(p.num)}</span><span class="pname">${esc(p.name)}</span><span class="pst">${s.label || `푼 사람 ${p.files.length}명`}</span></button>`;
+  }).join('') + (w.personal ? `<button class="pcard new" id="npCard" title="프로그래머스 번호나 링크로 새 문제 추가"><span class="pn">＋</span><span class="pname">새 문제 올리기</span></button>` : '');
+  if (w.personal) fillPersonalMeta(() => { if (state.cWeek === PERSONAL_WEEK && state.tab === 'create') renderProbGrid(); });
+  updateProbInfo();
+}
+async function updateProbInfo() {
+  const w = curWeek(), p = curProb(), info = $('#probInfo');
+  $('#cTarget').textContent = targetPath() || `${cfg.name || '이름'}.${cfg.ext}`;
+  if (!w || !p) {
+    info.innerHTML = w && w.personal ? '<span class="muted">위 칸에 <b>프로그래머스 번호나 링크</b>를 넣어 새 문제를 올리거나, 아래에서 남이 올린 문제를 고르세요.</span>' : '';
+    updatePreview(); return;
+  }
+  syncForm(w, p);   // 문제가 바뀌었으면 그 문제의 내 파일을 폼에 주입 (없으면 빈칸)
+  if (w.personal) { renderPersonalProbInfo(w, p); updatePreview(); return; }
+  info.innerHTML = `생성 위치: <code>${esc(targetPath())}</code><br><span class="muted">문제 정보 불러오는 중…</span>`;
+  const r = await readme(w, p);
+  if (curProb() !== p) return;
+  const src = formSource(w, p);
+  const srcHtml = src ? `📄 불러옴: <b>${esc(src.label)}</b> <button class="link" data-reload="1">다시 불러오기</button>` : '<span class="muted">📄 내 파일 없음 → 새로 작성</span>';
+  info.innerHTML = `생성 위치: <code>${esc(targetPath())}</code><br>문제: <b>${esc(r.title)}</b>${r.level ? ' · ' + esc(r.level) : ''} · <button class="link" data-prob-detail="${p.num}">다른 사람 풀이 보기 (${p.files.length})</button>${r.link ? `<br><a class="btn primary solve" href="${esc(r.link)}" target="_blank" rel="noopener">🚀 프로그래머스에서 풀기 ↗</a>` : ''}<br>${srcHtml}`;
+  updatePreview();
+}
+// 개인 문제는 README 가 없으니 문제 번호·제목·링크와 다른 사람 풀이 수를 직접 보여준다
+function renderPersonalProbInfo(w, p) {
+  const others = p.files.filter(f => !f.localOnly);
+  const src = formSource(w, p);
+  const srcHtml = src ? `📄 불러옴: <b>${esc(src.label)}</b> <button class="link" data-reload="1">다시 불러오기</button>` : '<span class="muted">📄 내 파일 없음 → 새로 작성</span>';
+  // 같은 문제를 다른 언어로 이미 올렸으면 파일이 하나 더 생기므로 미리 알려준다
+  const mineF = p.files.find(f => f.person === cfg.name);
+  const extWarn = mineF && mineF.ext.toLowerCase() !== cfg.ext.toLowerCase()
+    ? `<br><span style="color:var(--warn)">⚠ 이 문제는 이미 <code>${esc(mineF.fname)}</code> 로 올렸습니다 — 지금 형식(<code>.${esc(cfg.ext)}</code>)으로 만들면 파일이 하나 더 생깁니다.</span>` : '';
+  $('#probInfo').innerHTML = `생성 위치: <code>${esc(targetPath())}</code><br>문제: <b>${esc(p.name || p.base)}</b> <span class="muted">#${esc(p.base)}</span> · ${others.length ? `<button class="link" data-pdetail="${esc(String(p.num))}">다른 사람 풀이 보기 (${others.length})</button>` : '<span class="muted">아직 아무도 풀지 않은 문제입니다</span>'}${p.link ? `<br><a class="btn primary solve" href="${esc(p.link)}" target="_blank" rel="noopener">🚀 문제 풀러 가기 ↗</a>` : ''}<br>${srcHtml}${extWarn}`;
+}
+// 새 개인 문제 입력줄: 번호/링크를 입력하는 동안 만들어질 경로와 이미 푼 사람을 미리 보여준다
+const NP_HELP = '번호나 링크를 넣으면 <code>personal/이름/<b>번호</b>.확장자</code> 로 파일을 만들고 문제 링크를 자동으로 걸어 줍니다. 남이 올린 문제는 아래에서 고르면 됩니다.';
+function updateNpInfo() {
+  const raw = $('#npId').value.trim(), el = $('#npInfo');
+  if (!raw) { el.innerHTML = NP_HELP; return; }
+  const ref = parseProblemRef(raw);
+  if (!ref.ok) { el.innerHTML = `<span style="color:var(--err)">번호(예: <code>60058</code>)나 문제 링크를 인식하지 못했습니다.</span>`; return; }
+  const ex = data && data.personalProbs ? data.personalProbs.get(ref.base.toLowerCase()) : null;
+  const n = ex ? ex.files.filter(f => !f.localOnly).length : 0;
+  el.innerHTML = `→ <code>${esc(PERSONAL_DIR)}/${esc(cfg.name || '이름')}/<b>${esc(ref.base)}</b>.${esc(cfg.ext)}</code>${ref.link ? ` · <a href="${esc(ref.link)}" target="_blank" rel="noopener">문제 열어보기 ↗</a>` : ''}${ex ? ` · <b>이미 올라온 문제</b>${ex.name ? ` (${esc(ex.name)})` : ''}${n ? ` · 푼 사람 ${n}명` : ''}` : ''}`;
+}
+// 번호/링크로 문제를 추가(또는 이미 있는 문제를 선택)하고 바로 풀기 시작
+function addPersonalProblem() {
+  if (!data) return;
+  const ref = parseProblemRef($('#npId').value);
+  if (!ref.ok) { toast('프로그래머스 번호(예: 60058)나 문제 링크를 넣어주세요'); $('#npId').focus(); return; }
+  const key = ref.base.toLowerCase(), exists = data.personalProbs.get(key), name = $('#npName').value.trim();
+  if (state.cWeek !== PERSONAL_WEEK || state.cProb !== key) { if (!confirmDiscard()) return; }
+  pendingPersonal.set(key, { base: ref.base, name: name || (exists ? exists.name : ''), link: ref.link || (exists ? exists.link : '') });
+  buildPersonalProbs();
+  state.cWeek = PERSONAL_WEEK; state.cProb = key;
+  $('#npId').value = ''; $('#npName').value = '';
+  renderCreate();
+  toast(exists && exists.files.length ? `이미 ${exists.files.filter(f => !f.localOnly).length}명이 푼 문제입니다 — 같이 풀어요!` : `문제 ${ref.base} 준비 완료 — 코드를 붙여넣고 "파일 생성"`);
+  setTimeout(() => { $('.pcard.sel')?.scrollIntoView({ block:'center', behavior:'smooth' }); }, 0);
+}
+// 언어별 블록 주석 마커. null 이면 블록 주석이 없어 줄 주석만 사용
+const BLOCK_COMMENT = { py:["'''", "'''"], rb:null, sh:null };
+const blockMarkers = ext => (ext in BLOCK_COMMENT ? BLOCK_COMMENT[ext] : ['/*', '*/']);
+const cleanLines = v => String(v || '').replace(/\r\n/g, '\n').split('\n').map(s => s.trim()).filter(Boolean);
+// 한 줄 값용: "// 키: 값"
+function headerLines(c, key, val) {
+  const lines = cleanLines(val);
+  if (!lines.length) return `${c} ${key}: `;
+  return lines.map((l, i) => i === 0 ? `${c} ${key}: ${l}` : `${c}   ${l}`).join('\n');
+}
+// 항목 하나: 한 줄이면 "// 키: 값", 여러 줄이면 그 항목만 블록 주석으로
+function fieldBlock(ext, key, val) {
+  const ls = cleanLines(val), bk = blockMarkers(ext), c = COMMENT_PREFIX[ext] || '//';
+  if (ls.length > 1 && bk) return [bk[0], `${key}: ${ls[0]}`, ...ls.slice(1).map(l => '  ' + l), bk[1]].join('\n');
+  return headerLines(c, key, val);
+}
+// 파일 헤더 생성 (문제·링크는 항상 줄 주석, 접근 방식/시간복잡도는 각각 판단)
+function buildHeader(ext, title, approach, complexity, link) {
+  const c = COMMENT_PREFIX[ext] || '//';
+  return `${c} 문제: ${title}\n${link ? `${c} 링크: ${link}\n` : ''}${fieldBlock(ext, '접근 방식', approach)}\n${fieldBlock(ext, '시간복잡도', complexity)}\n\n`;
+}
+// 주석 마커를 뗀 줄들을 상태(st)에 먹임. 키 줄은 새 항목, 키 없는 줄은 직전 항목의 이어지는 줄. 소비한 줄 수 반환
+function feedHeader(st, bodies) {
+  let consumed = 0;
+  for (const body of bodies) {
+    const km = body.match(/^\s*([가-힣][가-힣\s]*?)\s*[:：]\s*(.*)$/);
+    let key = null;
+    if (km) { const k = km[1].replace(/\s+/g, ''); if (k === '문제' || k === '문제이름' || k === '문제명') key = 'title'; else if (k === '접근방식' || k === '접근' || k === '풀이방법' || k === '풀이') key = 'approach'; else if (k === '시간복잡도' || k === '복잡도') key = 'complexity'; else if (k === '링크' || k === '문제링크' || k === '주소') key = 'link'; }
+    if (key) { st.found[key] = km[2].trim(); st.last = key; consumed++; }
+    else if (!body.trim()) { if (st.last) consumed++; else break; }
+    else if (st.last) { st.found[st.last] = (st.found[st.last] ? st.found[st.last] + '\n' : '') + body.trim(); consumed++; }
+    else break;
+  }
+  return consumed;
+}
+// 코드 맨 위의 주석 헤더에서 추출. 줄 주석(// #)과 블록 주석(/* */ ''' """)이 섞여 이어져도 순서대로 읽음. 없으면 null
+function extractHeader(code) {
+  const src = String(code || '').replace(/\r\n/g, '\n');
+  const st = { found: { title: null, approach: null, complexity: null, link: null }, last: null };
+  let pos = 0, endPos = 0;
+  while (pos < src.length && !src.slice(pos, src.indexOf('\n', pos) < 0 ? src.length : src.indexOf('\n', pos)).trim()) { const nl = src.indexOf('\n', pos); if (nl < 0) { pos = src.length; break; } pos = nl + 1; }
+  endPos = pos;
+  while (pos < src.length) {
+    const nl = src.indexOf('\n', pos), lineEnd = nl < 0 ? src.length : nl, line = src.slice(pos, lineEnd);
+    if (!line.trim()) break;
+    const bm = line.match(/^\s*(\/\*+|'''|""")/);
+    if (bm) {
+      const open = bm[1], close = open.startsWith('/*') ? '*/' : open;
+      const start = pos + line.indexOf(open) + open.length, end = src.indexOf(close, start);
+      if (end < 0) break;
+      const inner = src.slice(start, end).split('\n').map(l => l.replace(/^\s*\*\s?/, ''));
+      while (inner.length && !inner[0].trim()) inner.shift();
+      if (!inner.length || feedHeader(st, inner) === 0) break;
+      const after = end + close.length, nl2 = src.indexOf('\n', after), tailEnd = nl2 < 0 ? src.length : nl2;
+      if (src.slice(after, tailEnd).trim()) { endPos = after + src.slice(after).search(/\S/); break; }
+      endPos = pos = nl2 < 0 ? src.length : nl2 + 1;
+    } else {
+      const m = line.match(/^\s*(?:\/\/|#)\s?(.*)$/);
+      if (!m || feedHeader(st, [m[1]]) === 0) break;
+      endPos = pos = nl < 0 ? src.length : nl + 1;
+    }
+  }
+  const f = st.found;
+  if (f.title === null && f.approach === null && f.complexity === null && f.link === null) return null;
+  const rest = src.slice(endPos).replace(/^[^\S\n]*\n/, '').replace(/^\n+/, '');
+  return { ...f, code: rest };
+}
+function applyHeaderFromCode(notify = true) {
+  const r = extractHeader($('#inCode').value);
+  if (!r) { updatePreview(); return; }
+  if (r.approach) $('#inApproach').value = r.approach;
+  if (r.complexity) $('#inComplexity').value = r.complexity;
+  $('#inCode').value = r.code; updatePreview();
+  const got = [r.approach && '접근 방식', r.complexity && '시간복잡도'].filter(Boolean);
+  if (notify) toast(got.length ? `코드 헤더에서 ${got.join(' · ')} 자동 입력` : '코드 상단 헤더를 제거했습니다 (파일 생성 시 다시 붙습니다)');
+}
+// 내용 작성 폼 상태: key = 폼에 주입된 문제, src = 주입한 파일 id, dirty = 주입 후 사용자가 수정했는지, seq = 비동기 주입 순서 보호
+const form = { key:'', src:'', dirty:false, seq:0 };
+const FORM_FIELDS = ['#inApproach', '#inComplexity', '#inCode'];
+const formHasText = () => FORM_FIELDS.some(s => $(s).value.trim());
+// 폼에 주입할 내 파일: 로컬 폴더의 파일 → 내가 GitHub 에 올린 파일(main 우선) → 없음(null)
+function formSource(w, p) {
+  const lf = folderReady() ? local.files.get(probKey(w, p)) : null;
+  if (lf) return { id:`local:${lf}`, kind:'local', name:lf, label:`${lf} (로컬)` };
+  const rf = cfg.name ? p.files.find(f => f.person === cfg.name && !f.localOnly) : null;
+  if (rf) return { id:`remote:${rf.ref}:${rf.path}`, kind:'remote', file:rf, label:`${rf.fname} (GitHub · ${rf.merged ? BRANCH : rf.branch})` };
+  return null;
+}
+// 작성 중인(주입 후 수정한) 내용이 있으면 버릴지 확인
+function confirmDiscard() { return !(form.dirty && formHasText()) || confirm('작성 중인 내용이 있습니다. 다른 문제를 선택하면 지금 내용은 사라집니다.\n계속할까요?'); }
+function setForm(text, src) {
+  $('#inCode').value = text; $('#inApproach').value = ''; $('#inComplexity').value = '';
+  $('#chkOverwrite').checked = !!src && src.kind === 'local';
+  form.dirty = false;
+  if (text) applyHeaderFromCode(false); else updatePreview();
+}
+async function readLocalText(w, p, fname) {
+  const pd = w.personal ? await (await local.handle.getDirectoryHandle(PERSONAL_DIR)).getDirectoryHandle(cfg.name)
+                        : await (await local.handle.getDirectoryHandle(w.dir)).getDirectoryHandle(p.dir);
+  return (await (await pd.getFileHandle(fname)).getFile()).text();
+}
+// 선택한 문제의 내 파일을 폼에 채움. 없으면 빈칸
+async function fillForm(w, p, src, notify = false) {
+  const seq = ++form.seq;
+  form.key = probKey(w, p); form.src = src ? src.id : ''; form.dirty = false;
+  let text = '', failed = false;
+  if (src) {
+    try { text = src.kind === 'local' ? await readLocalText(w, p, src.name) : await fetchCode(src.file.ref, src.file.path); }
+    catch (e) { failed = true; if (seq === form.seq) toast(`불러오기 실패: ${e.message}`); }
+  }
+  if (seq !== form.seq || form.dirty) return;   // 그 사이 다른 문제를 선택했거나 입력을 시작함
+  setForm(text, failed ? null : src);   // 읽기 실패 시 빈칸 + 덮어쓰기 체크 안 함
+  if (src && !failed && (notify || text)) toast(`불러옴: ${src.label}${src.kind === 'local' ? ' — 수정 후 "파일 생성"하면 덮어씁니다' : ''}`);
+}
+// 문제가 바뀌었을 때만 주입. 같은 문제면 파일 출처가 바뀌고(로컬 스캔 완료 등) 아직 수정 전일 때만 다시 주입
+function syncForm(w, p) {
+  const key = probKey(w, p), src = formSource(w, p), id = src ? src.id : '';
+  if (key === form.key && (id === form.src || form.dirty)) return;
+  fillForm(w, p, src);
+}
+function reloadForm() { const w = curWeek(), p = curProb(); if (!w || !p || !confirmDiscard()) return; fillForm(w, p, formSource(w, p), true); }
+function buildContent() {
+  const w = curWeek(), p = curProb(); if (!w || !p) return '';
+  const r = w.personal ? null : readmeCache.get(`${w.dir}/${p.dir}`);
+  const title = w.personal ? (p.name || p.base) : (r ? r.title : p.name);
+  const link = w.personal ? p.link : '';   // 개인 문제는 헤더에 문제 링크도 남긴다
+  const code = $('#inCode').value.replace(/\r\n/g, '\n').replace(/\s+$/, '');
+  return buildHeader(cfg.ext, title, $('#inApproach').value, $('#inComplexity').value, link) + `${code}${code ? '\n' : ''}`;
+}
+function updatePreview() { $('#preview').textContent = buildContent(); }
+async function createFile() {
+  const w = curWeek(), p = curProb(); if (!w || !p) return;
+  if (!cfg.name) { toast('파일 이름을 먼저 정해주세요'); $('#cName').focus(); return; }
+  applyHeaderFromCode(false);
+  const personal = !!w.personal;
+  // 개인 문제는 파일 이름이 곧 문제 번호 (personal/<내이름>/60058.cpp), 주차 문제는 <내이름>.<확장자>
+  const fname = personal ? `${p.base}.${cfg.ext}` : `${cfg.name}.${cfg.ext}`;
+  const path = personal ? `${PERSONAL_DIR}/${cfg.name}/${fname}` : `${w.dir}/${p.dir}/${fname}`;
+  const content = buildContent(), out = $('#createResult');
+  if (!$('#inCode').value.trim() && !confirm('코드가 비어 있습니다. 헤더만 있는 파일을 만들까요?')) return;
+  if (!local.handle || local.perm !== 'granted') { out.innerHTML = `<div class="box warn">폴더가 연결되지 않았습니다. <button class="link goto-settings">설정</button>에서 폴더를 연결하거나, "내용 복사" 후 <code>${esc(path)}</code> 에 직접 저장하세요.</div>`; return; }
+  try {
+    const pd = personal
+      ? await (await local.handle.getDirectoryHandle(PERSONAL_DIR, { create:true })).getDirectoryHandle(cfg.name, { create:true })
+      : await (await local.handle.getDirectoryHandle(w.dir, { create:true })).getDirectoryHandle(p.dir, { create:true });
+    let exists = false; try { await pd.getFileHandle(fname); exists = true; } catch {}
+    if (exists && !$('#chkOverwrite').checked) { out.innerHTML = `<div class="box warn">이미 파일이 있습니다: <code>${esc(path)}</code> — 덮어쓰려면 "이미 있으면 덮어쓰기"를 체크하세요.</div>`; return; }
+    const fh = await pd.getFileHandle(fname, { create:true }); const ws = await fh.createWritable(); await ws.write(content); await ws.close();
+    local.files.set(probKey(w, p), fname);
+    form.key = probKey(w, p); form.src = `local:${fname}`; form.dirty = false; $('#chkOverwrite').checked = true;   // 방금 쓴 내용이 곧 파일 내용이므로 다시 주입하지 않음
+    if (personal) {   // 방금 만든 개인 문제를 현황판에 바로 반영
+      if (!local.personal.includes(fname)) { local.personal.push(fname); local.personal.sort((a, b) => a.localeCompare(b)); }
+      personalProbMeta.set(p.num, { title: p.name || p.base, link: p.link || '' });
+      mergeLocalPersonal();
+    }
+    const msg = personal ? `[개인] ${p.base}${p.name ? ' ' + p.name : ''} ${fname}` : `[Week${w.num}] ${pad2(p.num)}.${p.name} ${fname}`;
+    const gitCmd = `git add "${path}" && git commit -m "${msg}" && git push -u origin ${local.branch && local.branch !== 'main' ? local.branch : '<내브랜치>'}`;
+    const prTitle = personal ? `[개인] ${esc(cfg.krName || '이름')}` : `[Week${w.num}] ${esc(cfg.krName || '이름')}`;
+    out.innerHTML = `<div class="box ok">✅ 생성됨: <code>${esc(path)}</code>${personal ? ' <span class="muted">— 개인 문제 탭에 바로 나타납니다 (푸시하면 모두에게)</span>' : ''}</div>
+      <div class="next card"><h3>다음 단계 — 푸시 (아래 중 하나)</h3>
+        <p><b>GitHub Desktop</b>: Changes에서 파일 체크 → Summary에 <code>${esc(msg)}</code> <button class="btn small copy" data-copy="${esc(msg)}">복사</button> → Commit → Push origin</p>
+        <p><b>터미널</b>: <code>${esc(gitCmd)}</code> <button class="btn small copy" data-copy="${esc(gitCmd)}">복사</button></p>
+        ${personal ? '' : `<p><b>Windows 스크립트</b>: <code>.\\up.ps1 ${w.num} ${p.num}</code></p>`}
+        <p class="muted small">PR이 아직 없으면 GitHub에서 Compare & pull request → 제목 <code>${prTitle}</code>${personal ? '' : ', 템플릿에 문제/링크/풀이 방법 작성'}. 이미 PR이 있으면 푸시만 하면 자동 반영됩니다.</p></div>`;
+    toast('파일 생성 완료'); renderAll();
+  } catch (e) { out.innerHTML = `<div class="box err">생성 실패: ${esc(e.message)}</div>`; }
+}
+
+// ---------- 설정 ----------
+function renderSettings() { $('#cfgName').value = cfg.name; $('#cfgKr').value = cfg.krName; $('#cfgExt').value = cfg.ext; $('#cfgToken').value = cfg.token; $('#cfgTokenStatus').textContent = cfg.token ? '저장된 토큰 사용 중' : ''; updateNamePreview(); renderFolder(); }
+function updateNamePreview() { $('#cfgNamePreview').textContent = `${$('#cfgName').value.trim() || '이름'}.${$('#cfgExt').value}`; }
+const normToken = v => (v || '').trim();
+function saveSettings() {
+  const name = $('#cfgName').value.trim(), token = normToken($('#cfgToken').value);
+  if (name && !/^[A-Za-z0-9_-]+$/.test(name)) { toast('파일 이름은 영문/숫자만 사용하세요 (예: hong)'); return; }
+  if (/\s/.test(token)) { toast('토큰 안에 공백이 있습니다. 다시 복사해 주세요'); $('#cfgToken').focus(); return; }
+  const tokenChanged = token !== cfg.token;
+  cfg.name = name; cfg.krName = $('#cfgKr').value.trim(); cfg.ext = $('#cfgExt').value; cfg.token = token; saveCfg();
+  if (tokenChanged) { state.rate = ''; $('#cfgTokenStatus').textContent = token ? '저장된 토큰 사용 중' : ''; }
+  toast(tokenChanged ? (token ? '저장됨 — 이제 내 토큰으로 요청합니다 (시간당 5,000회)' : '저장됨 — 토큰 없이 요청합니다') : '저장됨'); hideBanner();
+  const cached = safeJson(localStorage.getItem(CACHE_KEY)); if (cached) applyData(cached); else loadAll(true);
+  if (cfg.name) showTab('board');
+}
+
+// ---------- 첫 설정 팝업 ----------
+const fsSupported = () => 'showDirectoryPicker' in window;
+const folderReady = () => !!(local.handle && local.perm === 'granted');
+// 설정이 없으면 팝업으로 막고, 폴더 연결 + 이름을 마쳐야 입장
+const setupNeeded = () => !cfg.name || (fsSupported() && !local.handle);
+function renderSetupFolder() {
+  const el = $('#setupFolder'), sd = selfDir();
+  if (!fsSupported()) el.innerHTML = `<div class="box warn" style="margin-top:0">이 브라우저는 폴더에 직접 쓰기를 지원하지 않습니다. <b>Chrome</b> 또는 <b>Edge</b>로 이 파일을 열면 풀이가 저장소에 바로 저장됩니다. (Brave는 <code>brave://flags/#file-system-access-api</code> 를 Enabled로)</div><label class="small"><input type="checkbox" id="setupSkip"> 폴더 없이 계속하기 — 풀이는 "내용 복사"로 직접 저장하게 됩니다</label>`;
+  else if (folderReady()) el.innerHTML = `<div class="row" style="margin:0"><span class="box ok" style="margin:0">✅ 연결됨: <b>${esc(local.handle.name)}</b>${local.branch ? ` · 브랜치 <code>${esc(local.branch)}</code>` : ''}</span><button id="setupConnect" class="btn small">다른 폴더 선택</button></div>`;
+  else if (local.handle) el.innerHTML = `<div class="row" style="margin:0"><span>📁 ${esc(local.handle.name)}</span><button id="setupPerm" class="btn primary">폴더 접근 허용</button><button id="setupConnect" class="btn small">다른 폴더 선택</button></div><p class="small muted" style="margin:6px 0 0">브라우저를 다시 열면 권한을 한 번 더 확인합니다.</p>`;
+  else el.innerHTML = `<div class="row" style="margin:0"><button id="setupConnect" class="btn primary">problem-solving 폴더 선택</button></div><p class="small muted" style="margin:8px 0 0">clone 받은 저장소의 <b>최상위 폴더</b>(안에 <code>.git</code>, <code>week1-…</code> 폴더가 있는 곳)를 선택하세요.${sd ? ` 이 파일이 들어 있는 폴더를 그대로 고르면 됩니다:<br><code>${esc(sd)}</code>` : ''}</p>`;
+  $('#setupConnect')?.addEventListener('click', async () => { if (await connectFolder()) renderSetupFolder(); updateSetupState(); });
+  $('#setupPerm')?.addEventListener('click', async () => { await requestPerm(); renderSetupFolder(); updateSetupState(); });
+  $('#setupSkip')?.addEventListener('change', updateSetupState);
+  updateSetupState();
+}
+const setupFolderOk = () => fsSupported() ? folderReady() : !!$('#setupSkip')?.checked;
+function updateSetupState() {
+  const name = $('#setupName').value.trim(), okName = /^[A-Za-z0-9_-]+$/.test(name);
+  $('#setupNamePreview').textContent = `${name || '이름'}.${$('#setupExt').value}`;
+  $('#setupStart').disabled = !(setupFolderOk() && okName);
+  $('#setupHint').textContent = !setupFolderOk() ? '① 먼저 저장소 폴더를 연결하세요' : !name ? '② 파일 이름(영문)을 입력하세요' : !okName ? '파일 이름은 영문/숫자/-/_ 만 사용할 수 있습니다' : '';
+}
+function openSetup() {
+  $('#setupName').value = cfg.name; $('#setupKr').value = cfg.krName; $('#setupExt').value = cfg.ext; $('#setupToken').value = cfg.token;
+  renderSetupFolder(); $('#setup').hidden = false;
+  setTimeout(() => ((fsSupported() && !folderReady()) ? ($('#setupConnect') || $('#setupPerm')) : $('#setupName'))?.focus(), 0);
+}
+function finishSetup() {
+  const name = $('#setupName').value.trim(), token = normToken($('#setupToken').value);
+  if (!/^[A-Za-z0-9_-]+$/.test(name)) { toast('파일 이름은 영문/숫자/-/_ 만 사용하세요'); $('#setupName').focus(); return; }
+  if (/\s/.test(token)) { toast('토큰 안에 공백이 있습니다. 다시 복사해 주세요'); $('#setupToken').focus(); return; }
+  const tokenChanged = token !== cfg.token;
+  cfg.name = name; cfg.krName = $('#setupKr').value.trim(); cfg.ext = $('#setupExt').value; cfg.token = token; saveCfg();
+  if (tokenChanged) state.rate = '';
+  $('#setup').hidden = true; renderSettings(); hideBanner(); showTab('board');
+  if (lastPayload) applyData(lastPayload); else renderAll();   // 이름 기준으로 로컬 스캔·상태색 다시
+  if (tokenChanged && token && !data) loadAll(true);   // 토큰 없이 한 첫 로드가 한도 초과로 실패했으면 토큰으로 다시
+  toast(`설정 완료 — ${cfg.name}.${cfg.ext} 로 시작합니다`);
+}
+
+// ---------- 이벤트 ----------
+function bindEvents() {
+  $$('.tabs button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  $('#btnRefresh').addEventListener('click', () => loadAll(true));
+  $('#tab-board').addEventListener('click', e => {
+    if (e.target.closest('.goto-personal')) { showTab('personal'); return; }
+    const t = e.target.closest('[data-sort],[data-msort],[data-goto],[data-week],[data-person],[data-personal],[data-prob],[data-file]'); if (!t) return;
+    if (t.dataset.personal) { openPersonal(t.dataset.personal); return; }
+    if (t.dataset.sort) setSort(t.dataset.sort);
+    else if (t.dataset.msort) setMedalSort(t.dataset.msort);
+    else if (t.dataset.goto) { const [wn, pn] = t.dataset.goto.split(':').map(Number); if ((wn !== state.cWeek || pn !== state.cProb) && confirmDiscard()) { state.cWeek = wn; state.cProb = pn; } showTab('create'); setTimeout(() => $('.pcard.sel')?.scrollIntoView({ block:'center', behavior:'smooth' }), 0); }
+    else if (t.dataset.week) { state.week = +t.dataset.week; renderBoard(); }
+    else if (t.dataset.person) openPerson(t.dataset.person);
+    else if (t.dataset.prob) openProblem(state.week, +t.dataset.prob);
+    else if (t.dataset.file) openFile(t.dataset.file);
+  });
+  // 개인 문제 탭
+  $('#tab-personal').addEventListener('click', e => {
+    if (e.target.closest('a')) return;   // 문제 링크는 그대로 열리게
+    const solve = e.target.closest('[data-pssolve]');
+    if (solve) { gotoPersonal(solve.dataset.pssolve); return; }
+    const file = e.target.closest('[data-psfile]');
+    if (file) { openFile(file.dataset.psfile); return; }
+    const chip = e.target.closest('[data-pfilter]');
+    if (chip) { state.pFilter = chip.dataset.pfilter; renderPersonal(); return; }
+    const card = e.target.closest('[data-pskey]');
+    if (card) openPersonalProblem(card.dataset.pskey);
+  });
+  // [data-tip] 팝업: 마우스 오버/키보드 포커스에 표시, 스크롤·클릭·포커스 이탈 시 숨김. 화면 밖으로 안 나가게 좌우 여백 8px 안으로 밀어 넣음
+  const tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; document.body.appendChild(tip);
+  const hideTip = () => { tip.hidden = true; };
+  const showTip = el => {
+    tip.textContent = el.dataset.tip; tip.hidden = false;
+    const r = el.getBoundingClientRect(), tw = tip.offsetWidth, cx = r.left + r.width / 2;
+    const left = Math.max(8, Math.min(cx - tw / 2, window.innerWidth - tw - 8));
+    tip.style.left = `${left}px`; tip.style.top = `${r.bottom + 7}px`; tip.style.setProperty('--ax', `${cx - left}px`);
+  };
+  document.addEventListener('mouseover', e => { const el = e.target.closest('[data-tip]'); if (el) showTip(el); else if (!tip.hidden) hideTip(); });
+  document.addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); el ? showTip(el) : hideTip(); });
+  document.addEventListener('focusout', hideTip);
+  document.addEventListener('scroll', hideTip, true);
+  document.addEventListener('click', hideTip, true);
+  $('#detailClose').addEventListener('click', closeDetail);
+  $('#detail').addEventListener('click', e => { if (e.target === $('#detail')) closeDetail(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#detail').hidden) closeDetail(); });
+  $('#detailBody').addEventListener('click', e => {
+    const card = e.target.closest('.fcard');
+    if (e.target.closest('.toggle-code') && card) { const code = card.querySelector('.code'); code.hidden = !code.hidden; e.target.closest('.toggle-code').textContent = code.hidden ? '코드 보기' : '코드 접기'; if (!code.hidden) loadCode(card); }
+    else if (e.target.closest('.fb-submit') && card) submitFeedback(card, e.target.closest('.fb-submit'));
+    else if (e.target.closest('.like-btn') && card) toggleLike(card, e.target.closest('.like-btn'));
+    else if (e.target.closest('.fb-edit') && card) startEdit(card, e.target.closest('.fb-item'));
+    else if (e.target.closest('.fb-save') && card) saveEdit(card, e.target.closest('.fb-item'), e.target.closest('.fb-save'));
+    else if (e.target.closest('.fb-cancel') && card) refreshCard(card);
+    else if (e.target.closest('.fb-del') && card) deleteFeedback(card, e.target.closest('.fb-item'));
+    else if (e.target.closest('[data-pssolve]')) gotoPersonal(e.target.closest('[data-pssolve]').dataset.pssolve);
+    else if (e.target.closest('.goto-settings')) { closeDetail(); showTab('settings'); }
+    else if (e.target.closest('.goto-create')) { closeDetail(); showTab('create'); }
+  });
+  $('#detailBody').addEventListener('keydown', e => {
+    const card = e.target.closest('.fcard'); if (!card) return;
+    const enter = e.key === 'Enter' && (e.ctrlKey || e.metaKey);
+    if (e.target.matches('.fb-form textarea') && enter) submitFeedback(card, card.querySelector('.fb-submit'));
+    else if (e.target.matches('.fb-edit-ta')) { const item = e.target.closest('.fb-item'); if (enter) saveEdit(card, item, item.querySelector('.fb-save')); else if (e.key === 'Escape') { e.stopPropagation(); refreshCard(card); } }   // Esc 는 패널 닫기가 아니라 수정 취소
+  });
+  // 파일 만들기
+  $('#cName').addEventListener('input', () => { clearTimeout(nameTimer); nameTimer = setTimeout(applyNameChange, 400); $('#cTarget').textContent = (curWeek() && curProb()) ? `${curWeek().dir}/${curProb().dir}/${$('#cName').value.trim() || '이름'}.${$('#cExt').value}` : `${$('#cName').value.trim() || '이름'}.${$('#cExt').value}`; });
+  $('#cName').addEventListener('blur', () => { clearTimeout(nameTimer); applyNameChange(); });
+  $('#cExt').addEventListener('change', applyNameChange);
+  $('#createWeeks').addEventListener('click', e => {
+    const b = e.target.closest('[data-cweek]'); if (!b) return;
+    const wk = b.dataset.cweek === PERSONAL_WEEK ? PERSONAL_WEEK : +b.dataset.cweek;
+    if (wk === state.cWeek || !confirmDiscard()) return;
+    state.cWeek = wk; state.cProb = wk === PERSONAL_WEEK ? '' : 0; renderCreate();
+  });
+  $('#tab-create').addEventListener('click', e => { if (e.target.closest('.goto-settings')) showTab('settings'); });
+  $('#createProbs').addEventListener('click', e => {
+    if (e.target.closest('#npCard')) { $('#npId').focus(); $('#newPersonal').scrollIntoView({ block:'center', behavior:'smooth' }); return; }
+    const b = e.target.closest('[data-cprob]'); if (!b) return;
+    const pr = state.cWeek === PERSONAL_WEEK ? b.dataset.cprob : +b.dataset.cprob;
+    if (pr === state.cProb || !confirmDiscard()) return;
+    state.cProb = pr; renderProbGrid();
+  });
+  $('#probInfo').addEventListener('click', e => {
+    const b = e.target.closest('[data-prob-detail]'); if (b) openProblem(state.cWeek, +b.dataset.probDetail);
+    const pd = e.target.closest('[data-pdetail]'); if (pd) openPersonalProblem(pd.dataset.pdetail);
+    if (e.target.closest('[data-reload]')) reloadForm();
+  });
+  FORM_FIELDS.forEach(s => $(s).addEventListener('input', () => { form.dirty = true; updatePreview(); }));
+  $('#inCode').addEventListener('keydown', e => { if (e.key === 'Tab') { e.preventDefault(); const ta = e.target, s = ta.selectionStart; ta.setRangeText('    ', s, ta.selectionEnd, 'end'); form.dirty = true; updatePreview(); } });
+  $('#inCode').addEventListener('paste', () => setTimeout(() => applyHeaderFromCode(true), 0));
+  $('#btnPaste').addEventListener('click', async () => { try { const t = await navigator.clipboard.readText(); if (!t) { toast('클립보드가 비어 있습니다'); return; } $('#inCode').value = t; form.dirty = true; applyHeaderFromCode(true); } catch { toast('클립보드 읽기 권한이 없습니다. 텍스트 영역에 Ctrl+V 로 붙여넣으세요.'); $('#inCode').focus(); } });
+  $('#npAdd').addEventListener('click', addPersonalProblem);
+  $('#npId').addEventListener('input', updateNpInfo);
+  $('#npId').addEventListener('paste', () => setTimeout(updateNpInfo, 0));
+  $$('#npId, #npName').forEach(el => el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addPersonalProblem(); } }));
+  $('#btnCreate').addEventListener('click', createFile);
+  $('#btnCopy').addEventListener('click', () => copyText(buildContent()));
+  $('#createResult').addEventListener('click', e => { const b = e.target.closest('.copy'); if (b) copyText(b.dataset.copy); });
+  // 설정
+  $('#btnSaveCfg').addEventListener('click', saveSettings);
+  // 토큰 확인 (설정 탭 / 첫 설정 팝업) — /rate_limit 호출이라 한도를 쓰지 않음
+  const verifyTokenUI = async (inputSel, statusSel) => {
+    const token = normToken($(inputSel).value), st = $(statusSel);
+    if (!token) { st.textContent = '토큰을 먼저 붙여넣으세요'; return; }
+    st.textContent = '확인 중…';
+    try { const r = await checkToken(token); st.innerHTML = `<span class="box ok" style="margin:0;padding:2px 8px">✅ 유효한 토큰 · 시간당 ${r.limit}회 (잔여 ${r.remaining})</span>`; }
+    catch (e) { st.innerHTML = `<span class="box err" style="margin:0;padding:2px 8px">❌ ${esc(e.message)}</span>`; }
+  };
+  $('#btnCheckToken').addEventListener('click', () => verifyTokenUI('#cfgToken', '#cfgTokenStatus'));
+  $('#setupCheckToken').addEventListener('click', () => verifyTokenUI('#setupToken', '#setupTokenStatus'));
+  $('#cfgToken').addEventListener('input', () => { $('#cfgTokenStatus').textContent = ''; });
+  $('#setupToken').addEventListener('input', () => { $('#setupTokenStatus').textContent = ''; });
+  $('#cfgName').addEventListener('input', updateNamePreview); $('#cfgExt').addEventListener('change', updateNamePreview);
+  $('#btnClearCache').addEventListener('click', () => { localStorage.removeItem(CACHE_KEY); toast('캐시 삭제됨'); loadAll(true); });
+  // 첫 설정 팝업
+  $('#setupName').addEventListener('input', updateSetupState); $('#setupExt').addEventListener('change', updateSetupState);
+  $('#setupStart').addEventListener('click', finishSetup);
+  $('#setup').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input') && !$('#setupStart').disabled) { e.preventDefault(); finishSetup(); } });
+  // 재방문 시 폴더 권한 배너
+  $('#banner').addEventListener('click', async e => { if (!e.target.closest('#bannerPerm')) return; await requestPerm(); if (local.perm === 'granted') { hideBanner(); toast('폴더 연결됨: ' + local.handle.name); } });
+}
+
+// ---------- 시작 ----------
+async function init() {
+  bindEvents(); renderSettings(); updateHeader();
+  await restoreFolder(); renderFolder();   // 복원된 폴더 핸들로 설정 탭 카드 갱신
+  showTab('board');
+  if (setupNeeded()) openSetup();   // 설정 전에는 팝업이 화면을 막습니다
+  else if (local.handle && local.perm !== 'granted') showBanner(`📁 <b>${esc(local.handle.name)}</b> 폴더 접근을 다시 허용하면 로컬 풀이·피드백이 현황판에 표시됩니다. <button id="bannerPerm" class="btn small primary" style="margin-left:6px">허용</button>`, 'warn');
+  await loadAll(false);
+}
+init();
+})();
+</script>
+</body>
+</html>
