@@ -109,11 +109,12 @@ for i in range(1, n + 1):
 
 | 번호 | 난이도 | 문제 | 링크 | 관련 개념 |
 |:---:|:---:|---|---|---|
-| 1 | Lv.3 | 정수 삼각형 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/43105) | 2차원 DP 입문 |
-| 2 | Lv.3 | 등굣길 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42898) | 2차원 DP(격자 경로) |
-| 3 | Lv.3 | N으로 표현 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42895) | **심화**: DP(점화식 도출이 까다로움) |
-| 4 | Lv.4 | 도둑질 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42897) | **심화**: 1차원 DP(원형 배치) |
-| 5 | Lv.4 | 스티커 모으기(2) | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12971) | **심화**: 1차원 DP(원형 배치), 도둑질과 유사한 구조, 다소 어려울 수 있어 여유 있을 때 도전 |
+| 1 | Lv.3 | 멀리 뛰기 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12914) | 1차원 DP 입문 |
+| 2 | Lv.3 | 정수 삼각형 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/43105) | 2차원 DP 입문 |
+| 3 | Lv.3 | 등굣길 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42898) | 2차원 DP(격자 경로) |
+| 4 | Lv.3 | N으로 표현 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42895) | **심화**: DP(점화식 도출이 까다로움) |
+| 5 | Lv.4 | 도둑질 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42897) | **심화**: 1차원 DP(원형 배치) |
+| 6 | Lv.4 | 스티커 모으기(2) | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12971) | **심화**: 1차원 DP(원형 배치), 도둑질과 유사한 구조, 다소 어려울 수 있어 여유 있을 때 도전 |
 
 <br>
 
