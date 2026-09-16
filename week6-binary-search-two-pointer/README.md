@@ -167,14 +167,13 @@ def range_sum(i, j):
 
 | 번호 | 난이도 | 문제 | 링크 | 관련 개념 |
 |:---:|:---:|---|---|---|
-| 1 | Lv.1 | 예산 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12982) | 이분탐색(파라메트릭 서치) 입문 |
-| 2 | Lv.1 | 최댓값과 최솟값 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12939) | 투 포인터 |
-| 3 | Lv.1 | 로또의 최고 순위와 최저 순위 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/77484) | 투 포인터(정렬 후 두 배열 비교) |
-| 4 | Lv.2 | 할인 행사 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/131127) | 슬라이딩 윈도우(고정 크기 10일 구간) |
-| 5 | Lv.3 | 입국심사 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/43238) | **심화**: 이분탐색(파라메트릭 서치) |
-| 6 | Lv.3 | 보석 쇼핑 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/67258) | **심화**: 투 포인터 + 슬라이딩 윈도우 결합 |
-| 7 | Lv.3 | 광고 삽입 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/72414) | **심화**: 슬라이딩 윈도우 + 구간합(누적합) 결합 |
-| 8 | Lv.3 | 연속 부분 수열 합의 개수 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/131701) | **심화**: 슬라이딩 윈도우(원형 수열), 이번 주에서 가장 난이도가 높음, 여유 있을 때 도전 |
+| 1 | Lv.1 | 최댓값과 최솟값 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12939) | 투 포인터 |
+| 2 | Lv.1 | 로또의 최고 순위와 최저 순위 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/77484) | 투 포인터(정렬 후 두 배열 비교) |
+| 3 | Lv.2 | 할인 행사 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/131127) | 슬라이딩 윈도우(고정 크기 10일 구간) |
+| 4 | Lv.3 | 입국심사 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/43238) | **심화**: 이분탐색(파라메트릭 서치) |
+| 5 | Lv.3 | 보석 쇼핑 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/67258) | **심화**: 투 포인터 + 슬라이딩 윈도우 결합 |
+| 6 | Lv.3 | 광고 삽입 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/72414) | **심화**: 슬라이딩 윈도우 + 구간합(누적합) 결합 |
+| 7 | Lv.3 | 연속 부분 수열 합의 개수 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/131701) | **심화**: 슬라이딩 윈도우(원형 수열), 이번 주에서 가장 난이도가 높음, 여유 있을 때 도전 |
 
 <br>
 

@@ -133,10 +133,11 @@ def min_coins(amount, coins):
 | 1 | Lv.1 | 최소직사각형 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/86491) | 완전탐색(브루트포스) |
 | 2 | Lv.1 | 모의고사 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42840) | 완전탐색(브루트포스) |
 | 3 | Lv.1 | 체육복 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42862) | 그리디 |
-| 4 | Lv.2 | 카펫 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42842) | 완전탐색(약수 조합 탐색) |
-| 5 | Lv.2 | 피로도 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/87946) | 완전탐색(순열 활용) |
-| 6 | Lv.2 | 구명보트 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42885) | 그리디(정렬 + 투 포인터 결합) |
-| 7 | Lv.3 | N-Queen | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12952) | **심화**: 백트래킹, 다소 어려울 수 있어 여유 있을 때 도전 |
+| 4 | Lv.1 | 예산 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12982) | 그리디(정렬 후 누적) |
+| 5 | Lv.2 | 카펫 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42842) | 완전탐색(약수 조합 탐색) |
+| 6 | Lv.2 | 피로도 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/87946) | 완전탐색(순열 활용) |
+| 7 | Lv.2 | 구명보트 | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/42885) | 그리디(정렬 + 투 포인터 결합) |
+| 8 | Lv.3 | N-Queen | [프로그래머스](https://school.programmers.co.kr/learn/courses/30/lessons/12952) | **심화**: 백트래킹, 다소 어려울 수 있어 여유 있을 때 도전 |
 
 <br>
 
@@ -152,5 +153,17 @@ week5-brute-force-greedy/
 ├── problem01-최소직사각형/
 │   └── 이름.py
 ├── problem02-모의고사/
+│   └── 이름.py
+├── problem03-체육복/
+│   └── 이름.py
+├── problem04-예산/
+│   └── 이름.py
+├── problem05-카펫/
+│   └── 이름.py
+├── problem06-피로도/
+│   └── 이름.py
+├── problem07-구명보트/
+│   └── 이름.py
+├── problem08-N-Queen/
 │   └── 이름.py
 ```
